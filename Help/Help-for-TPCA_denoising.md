@@ -7,14 +7,25 @@ This help file contains information about
 4) [Example Code](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-TPCA_denoising.md#4-Example-Code)
 5) [Acknowledgements](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-TPCA_denoising.md#5-Acknowledgements)
 
-# 1. Purpose 
+## 1. Purpose 
 This function performs 4-dimensional image denoising by exploiting data redundancy in the Principal Components Analysis (PCA) domain using threshold PCA denoising, as proposed by Henriques et al., Imaging Neuroscience, 2023 
 
-[Signal, n_comps] = TPCA_denoising(data, mask, kernel, sampling, centering, noise_var) output:
+[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-TPCA_denoising.md)
+
+## 2. Usage
+The user inputs the image data, a mask defining the region to be denoised (optional), a window size for the PCA analysis (optional), and a matrix containing spatail noise variance estimates. The denosed data and the number of non-noise principal components are returned.
+
+## 3. Syntax
+[Signal, n_comps] = TPCA_denoising(data, mask, kernel, sampling, centering, noise_var) 
+
+The input arguments are:
+* <i>data:</> [x, y, z, M] 4D DTI volume
+
+output:
 - Signal: [x, y, z, M] denoised data matrix
 - n_comps: [x, y, z] number of non-noise pricipal components identified
 input:
-- data: [x, y, z, M] 4D DTI volume
+- data: 
 - mask:   (optional)  region-of-interest [boolean]
 - kernel: (optional)  window size for PCA analyses
 - noise_var: [x,y,z] data matrix containing the spatial noise variance estimates of the data 
