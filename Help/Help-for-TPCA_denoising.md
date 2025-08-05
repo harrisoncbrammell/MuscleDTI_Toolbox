@@ -15,23 +15,29 @@ This function performs 4-dimensional image denoising by exploiting data redundan
 ## 2. Usage
 The user inputs the image data, a mask defining the region to be denoised (optional), a window size for the PCA analysis (optional), and a matrix containing spatail noise variance estimates. The denosed data and the number of non-noise principal components are returned.
 
+[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-TPCA_denoising.md)
+
 ## 3. Syntax
 [Signal, n_comps] = TPCA_denoising(data, mask, kernel, sampling, centering, noise_var) 
 
 The input arguments are:
-* <i>data:</> [x, y, z, M] 4D DTI volume
+* <i>data:</i> [x, y, z, M] 4D DTI volume
+* <i>mask:</i> (optional) region-of-interest (boolean)
+* <i>kernel:</i> (optional) window size for PCA analyses
+* <i>noise_var:</i> [x,y,z] data matrix containing the spatial noise variance estimates of the data
 
-output:
-- Signal: [x, y, z, M] denoised data matrix
-- n_comps: [x, y, z] number of non-noise pricipal components identified
-input:
-- data: 
-- mask:   (optional)  region-of-interest [boolean]
-- kernel: (optional)  window size for PCA analyses
-- noise_var: [x,y,z] data matrix containing the spatial noise variance estimates of the data 
+The output arguments are:
+* <i>Signal:</i> [x, y, z, M] denoised data matrix
+* <i>n_comps:</i> [x, y, z] number of non-noise pricipal components identified
 
-Adapted from: MPPCAdenoising by Jelle Veraart (jelle.veraart@nyumc.org)
-Copyright (c) 2016 New York University and University of Antwerp and PCAdenoising by Rafael Neto Henriques (https://github.com/RafaelNH/PCAdenoising)
+[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-TPCA_denoising.md)
+
+## 4. Example code
+
+[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-TPCA_denoising.md)
+
+## 5. Acknowledgements
+Adapted from: MPPCAdenoising by Jelle Veraart (jelle.veraart@nyumc.org), Copyright (c) 2016 New York University and University of Antwerp and PCAdenoising by Rafael Neto Henriques (https://github.com/RafaelNH/PCAdenoising)
     
 Permission is hereby granted, free of charge, to any non-commercial entity ('Recipient') obtaining a copy of this software and associated documentation files (the 'Software'), to the Software solely for non-commercial research, including the rights to use, copy and modify the Software, subject to the following conditions: 
    
@@ -55,3 +61,6 @@ Henriques, R.N.; Ianus, A.; Novello, L.,; Jovicich, J.; Jespersen, S.N.; Shemesh
 10.1162/imag_a_0049
 Manjon, J.V.; Coupe, P.; Concha, L.; Buades, A.; Collins, D.L.;
 Robles, M. Diffusion weighted image denoising using overcomplete local PCA. PLoS One, 2013, doi: 10.1371/journal.pone.0073021
+
+[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-TPCA_denoising.md)
+
