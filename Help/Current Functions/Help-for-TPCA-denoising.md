@@ -1,3 +1,5 @@
+# Help for tpca_denoising
+
 ## Introduction
 
 This help file contains information about
