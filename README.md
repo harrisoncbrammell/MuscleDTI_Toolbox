@@ -11,6 +11,8 @@ The MuscleDTI_Toolbox consists of a series of custom-written MATLAB functions fo
   7) [Becoming a MuscleDTI_Toolbox contributor](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/README.md#7-Becoming-a-MuscleDTI_Toolbox-contributor)
   8) [Links to other resources in the toolbox and online](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/README.md#8-other-resources)
 
+Help files for all of the functions described below are available [here](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/README.md).
+
 ## 1. Acknowledgements
 The functions in this toolbox reflect the collective contributions of many individuals over many years, including: Adam Anderson, Amanda Buck, Crystal Coolbaugh, Bruce Damon, Zhaohua Ding, Mark George, John Gore, Hannah Kilpatrick, Anneriet Heemskerk, Melissa Hooijmans, Drew Lansdown, Bennett Landman, Carly Lockard, Justin Montenegro, Roberto Pineda Guzman, Tuhin Sinha, Kevin Wilson, and Xingyu Zhou. Details regarding authorship and other individual contributions are noted in each function.
 
@@ -38,7 +40,7 @@ Whole-image Properties
 * Acquisition volumes of structural and DT images match
 
 ## 5. Overview of a Typical Workflow
-Muscle DTI tractography includes pre-processing and fiber-tract processing steps, as elucidated below.
+Muscle DTI tractography includes pre-processing and fiber-tract processing steps, as described below.
 
 ### A. Pre-processing
 Before performing fiber tractography, several pre-processing steps must be performed:
@@ -46,7 +48,7 @@ Before performing fiber tractography, several pre-processing steps must be perfo
 * <i>Concatenation of multiple image acqusitions into a single dataset</i>: Many users acquire DTI images in multiple stacks.  In thes cases, the image stacks will need to be concatenated in a manner consistent with the slice number conventions described above. 
 * <i>Mask formation</i>: Several steps in the toolbox require the formation of a binary image mask of the muscle of interest. An image mask is a matrix having the same dimensions of the image(s) or interest. In the matrix, 1's are used to represent the location of structures of interest and 0's are used to indicate other regions.
 * <i>Image registration</i>: Switching of the diffusion-encoding gradients induces distortions in the images. In the toolbox, these distortions are corrected using image registration; the example in this toolbox uses the Demons registration technique, called using the <i>imregdemons</i> function in MATLAB.
-* <i>De-noising</i>: Some level of noise in the data is inevitable. This noise adds variability to the estimation of the diffusion tensor; at a sufficiently low signal-to-noise ratio, it can also add bias. Two options are presented here. One uses the custom-written function anisotropic smoothing method, [<i>aniso4d_smooth</i>](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Preprocessing-Functions/aniso4D_smoothing.m), help for this function is available [here](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-signal2tensor2.md). A Threshold-based Principal Components Analysis, [<i>TPCA_denoising</i>](Preprocessing-Functions/TPCA_denoising.m) is also available, with help presented [here].
+* <i>De-noising</i>: Some level of noise in the data is inevitable. This noise adds variability to the estimation of the diffusion tensor; at a sufficiently low signal-to-noise ratio, it can also add bias. Two options are presented here. One uses the custom-written function anisotropic smoothing method, [<i>aniso4d_smooth</i>](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Preprocessing-Functions/aniso4D_smoothing.m). A Threshold-based Principal Components Analysis, [<i>TPCA_denoising</i>](Preprocessing-Functions/TPCA_denoising.m) is also available.
 * <i>Estimation of the diffusion tensor throughout the muscle of interest</i>: The example given here uses a weighted least squares method to estimate the diffusion tensor that best matches the observed signals, given the diffusion-encoding matrix and diffusion encoding (b-) value. This is performed in the function [<i>signal2tensor2</i>](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Preprocessing-Functions/signal2tensor2.m), help for which is found [here](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-signal2tensor2.md).
 
 Follow [this link](https://github.com/bdamon/MuscleDTI_Toolbox/tree/master/Sample-Scripts) for a MATLAB script and [this link](https://github.com/bdamon/MuscleDTI_Toolbox/tree/master/Preprocessing-Functions) for the custom-written MATLAB functions that perform these tasks. Other required functions are part of MATLAB's proprietary toolboxes and cannot be distributed here. 
