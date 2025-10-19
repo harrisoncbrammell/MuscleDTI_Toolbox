@@ -3,18 +3,15 @@
 ## Introduction
 
 This help file contains information about
-1) [Purpose of the Program](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-aniso4d_smoothing.md#1-Purpose)
-2) [Usage of the Program](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-aniso4d_smoothing.md#2-Usage)
-3) [Syntax](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-aniso4d_smoothing.md#3-Syntax)
-4) [Example Code](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-aniso4d_smoothing.md#4-Example-Code)
-5) [Acknowledgements](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-aniso4d_smoothing.md#5-Acknowledgements)
-
+1) [Purpose of the Program](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-aniso4d_smoothing.md#1-Purpose)
+2) [Usage of the Program](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-aniso4d_smoothing.md#2-Usage)
+3) [Syntax](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-aniso4d_smoothing.md#3-Syntax)
+4) [Example Code](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-aniso4d_smoothing.md#4-Example-Code)
+5) [Acknowledgements](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-aniso4d_smoothing.md#5-Acknowledgements)
 
 ## 1. Purpose
 
 The function <i>aniso4d_smoothing</i> is used to smooth diffusion-weighted images.
-
-[Back to the Top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-aniso4d_smoothing.md)
 
 ## 2. Usage
 The user provides the diffusion weighted images and options that control the degree of smoothing. The images are smoothed using the method described by Ding et al. and Xu et al., which first smooths the images by convolution with a Gaussian kernel with a variance σ. The images are then filtered according to the partial differential equation:
@@ -22,8 +19,6 @@ The user provides the diffusion weighted images and options that control the deg
   δI/δt=div(T∙∇I)
 
 where I is the image intensity, <b>T</b> is a structure tensor that provides smoothing anisotropy, and δt is the iteration time parameter. <b>T</b> is the normalized inverse of the gradient tensor, <b>G</b>. <b>G</b> is the convolution of the outer product of ∇I with a Gaussian kernel having a standard deviation ρ, where the gradient ∇I is estimated from the diffusion-weighted images convolved with a Gaussian kernel with a variance σ.  The anisotropic smoothing method uses a common definition of <b>G</b> for all diffusion-weighting directions, allowing boundary information that is missing in one weighting direction to be captured from another weighting direction. Thus, the algorithm provides isotropic smoothing inside of structures and anisotropic smoothing at their boundaries. The smoothed images are returned.
-
-[Back to the Top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-aniso4d_smoothing.md)
 
 ## 3. Syntax
 
@@ -50,9 +45,6 @@ The input arguments are:
 The output argument is:
 
 * <i>image_smoothed</i>: The smoothed images.
-
-[Back to the Top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-aniso4d_smoothing.md)
- 
 
 ## 4. Example Code
 
@@ -86,11 +78,8 @@ dti_res = [1 7];
 
 dti_all_reg_smooth = aniso4D_smoothing(dti_all_reg, sigma, rho, delta_t, dti_res, schemetype, isnormg, isfasteig);
  
-[Back to the Top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-aniso4d_smoothing.md)
-
 ## 5. Acknowledgements
 
 Grant support: NIH/NIBIB R01 EB000461, NIH/NIBIB R01 EB02777
 
-[Back to the Top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-aniso4d_smoothing.md)
  
