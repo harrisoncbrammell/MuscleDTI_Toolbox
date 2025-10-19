@@ -2,29 +2,37 @@
 ## A MATLAB Toolbox for Skeletal Muscle Diffusion Tensor MRI Fiber Tractography 
 
 The MuscleDTI_Toolbox consists of a series of custom-written MATLAB functions for performing diffusion-tensor MRI fiber tractography in skeletal muscle. This README file contains
-  1) [Acknowledgements](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/README.md#1-acknowledgements)
-  2) [License information](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/README.md#2-license-information)
-  3) [A list of MATLAB requirements](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/README.md#3-matlab-requirements)
-  4) [A list of the conventions assumed regarding data acquisition](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/README.md#4-data-acquisition-conventions-assumed)
-  5) [An overview of a typical workflow using the toolbox](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/README.md#5-overview-of-a-typical-workflow)
-  6) [Installation instructions](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/README.md#6-installation-instructions)
-  7) [Becoming a MuscleDTI_Toolbox contributor](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/README.md#7-Becoming-a-MuscleDTI_Toolbox-contributor)
-  8) [Links to other resources in the toolbox and online](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/README.md#8-other-resources)
+  1) [Updates and news](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/README.md#1-updates-and-news)
+  2) [Acknowledgements](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/README.md#2-acknowledgements)
+  3) [License information](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/README.md#3-license-information)
+  4) [A list of MATLAB requirements](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/README.md#4-matlab-requirements)
+  5) [A list of the conventions assumed regarding data acquisition](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/README.md#5-data-acquisition-conventions-assumed)
+  6) [An overview of a typical workflow using the toolbox](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/README.md#6-overview-of-a-typical-workflow)
+  7) [Installation instructions](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/README.md#7-installation-instructions)
+  8) [Becoming a MuscleDTI_Toolbox contributor](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/README.md#8-Becoming-a-MuscleDTI_Toolbox-contributor)
+  9) [Links to other resources in the toolbox and online](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/README.md#9-other-resources)
 
 Help files for all of the functions described below are available [here](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/README.md).
 
-## 1. Acknowledgements
+## 1. Updates and News
+With several recent publications, we have introduced several new options and other updates to the Toolbox:
+* We implemented and tested an alternative denoising method, Threshold-based Principal Components Analysis (TPCA). A function that implements this method is available in the [Pre-processing Functions code folder](https://github.com/bdamon/MuscleDTI_Toolbox/tree/master/Preprocessing-Functions).
+* We implemented and tested a method for smoothing the first eigenvector field using a robust spline smoothing approach. A function that implements this method is available in the [Pre-processing Functions code folder](https://github.com/bdamon/MuscleDTI_Toolbox/tree/master/Preprocessing-Functions).
+* We evaluated several approaches for seeding the fiber tracts. These "voxel-based" methods do not use the aponeurosis to form the seeding mesh, but instead distribute seed points within the muscle volume.  Users adopting these methods no longer need to use the <i>define_roi</i> function to digitize the aponeurosis boundaries; instead, these methods are simply specified from within <i>fiber_track</i>. Several other functions needed to be updated to account for factors such as differences in matrix dimensions. The new functions are available [here](https://github.com/bdamon/MuscleDTI_Toolbox/tree/master/Tractography-Functions). The legacy functions are available [here](https://github.com/bdamon/MuscleDTI_Toolbox/tree/master/Tractography-Functions/Legacy-Functions).
+* When aponeurosis seeding is used, several new gemoetric properties are calculated, including the angle formed by the fibers and the mechanical line of action and the angle formed by the aponeurosis and the line of action. These are implemented in the new version of [<i>fiber_quantifier</i>], available [here](https://github.com/bdamon/MuscleDTI_Toolbox/tree/master/Tractography-Functions). 
+
+## 2. Acknowledgements
 The functions in this toolbox reflect the collective contributions of many individuals over many years, including: Adam Anderson, Amanda Buck, Crystal Coolbaugh, Bruce Damon, Zhaohua Ding, Mark George, John Gore, Hannah Kilpatrick, Anneriet Heemskerk, Melissa Hooijmans, Drew Lansdown, Bennett Landman, Carly Lockard, Justin Montenegro, Roberto Pineda Guzman, Tuhin Sinha, Kevin Wilson, and Xingyu Zhou. Details regarding authorship and other individual contributions are noted in each function.
 
 This work was supported by NIH grants NIH/NIAMS R01 AR050101 and NIH/NIAMS R01 AR073831. By using this software, users agree to acknowledge NIH/NIAMS R01 AR073831 in presentations and publications, cite the paper in which this toolbox is described (see [Section 8B](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/README.md#8-other-resources)), and adhere to [NIH policies](https://grants.nih.gov/policy-and-compliance/policy-topics/public-access) regarding open access to their publications. 
 
-## 2. License Information
+## 3. License Information
 This work is covered under a [GNU General Public License](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/LICENSE.md), v. 3 or later.
 
-## 3. MATLAB Requirements
+## 4. MATLAB Requirements
 The functions have been tested using MATLAB v. 2019b.  The toolbox consists primarily of custom-written functions, but also calls some built-in MATLAB functions.
 
-## 4. Data Acquisition Conventions Assumed 
+## 5. Data Acquisition Conventions Assumed 
 In-plane Geometry
 * In-plane field of view is square
 * In-plane reconstructed imaging matrix size is square
@@ -39,7 +47,7 @@ Whole-image Properties
 * The slices cover the entire muscle of interest
 * Acquisition volumes of structural and DT images match
 
-## 5. Overview of a Typical Workflow
+## 6. Overview of a Typical Workflow
 Muscle DTI tractography includes pre-processing and fiber-tract processing steps, as described below.
 
 ### A. Pre-processing
@@ -68,7 +76,7 @@ Switching of the phase-encoding gradients can induce distortions in the images. 
 
 Follow [this link](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Sample-Scripts/process_tracts.m) for a MATLAB script and [this link](https://github.com/bdamon/MuscleDTI_Toolbox/tree/master/Tractography-Functions) for the custom-written MATLAB functions that perform these tasks. Other required functions are part of MATLAB's proprietary toolboxes and cannot be distributed here.
 
-## 6. Installation Instructions
+## 7. Installation Instructions
 We assume that you have installed MATLAB v. 2019b or later, including the Image Processing toolbox.
 
 1) From this page, click the green Code button.
@@ -77,7 +85,7 @@ We assume that you have installed MATLAB v. 2019b or later, including the Image 
 4) Unzip the file folder, saving it in a directory of your own choosing.
 5) In MATLAB, add a search path to the folders with the toolbox's custom functions. There are separate folders for pre-processing and fiber tractography functions. You may wish to rename the folders or even combine all functions into a single folder.
 
-## 7. Becoming a MuscleDTI_Toolbox Contributor
+## 8. Becoming a MuscleDTI_Toolbox Contributor
 We encourage users  to contribute to and improve the MuscleDTI_Toolbox and become part of our community.  Together, we can make the software into a useful and robust tool for muscle research. Whether you are a coding wizard or someone who has never opened MATLAB before this project, we can use your help. Here are a few ways how you can get involved:
 
 ### A. Do you like to code?
@@ -102,7 +110,7 @@ Experiencing a bug?  Have an idea? Please submit a bug report or feature request
 
 Lastly, please be aware of and commit to following the [Code of Conduct](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/General%20Documents/CODE%20OF%20CONDUCT.md).
 
-## 8. Other Resources
+## 9. Other Resources
 ### A. Within the toolbox:
 Links to scripts, functions, and their help files:
 * [Here's a link to the sample scripts](https://github.com/bdamon/MuscleDTI_Toolbox/tree/master/Sample-Scripts)
