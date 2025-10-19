@@ -3,20 +3,17 @@
 ## Introduction
 
 This help file contains information about
-1) [Purpose of the Program](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-signal2tensor2.md#1-purpose)
-2) [Usage of the Program](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-signal2tensor2.md#2-usage)
-3) [Syntax](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-signal2tensor2.md#3-Syntax)
-4) [Example Code](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-signal2tensor2.md#4-Example-Code)
-5) [Acknowledgements](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-signal2tensor2.md#5-Acknowledgements)
+1) [Purpose of the Program](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-signal2tensor2.md#1-purpose)
+2) [Usage of the Program](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-signal2tensor2.md#2-usage)
+3) [Syntax](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Current%20Functions/Help-for-signal2tensor2.md#3-Syntax)
+4) [Example Code](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-signal2tensor2.md#4-Example-Code)
+5) [Acknowledgements](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-signal2tensor2.md#5-Acknowledgements)
 
 ## 1. Purpose
 <i>signal2tensor2</i> finds the tensor that best fits the observed signal.
 
-[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-signal2tensor2.md)
-
 ## 2. Usage
 The user inputs a column vector containing unweighted and diffusion-weighted signals, a matrix describing the diffusion-sensitizing directions, and the b-value (assumed to be the same for all directions). The function outputs the calculated tensor, with units of 1/[b].
-
 [Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-signal2tensor2.md)
 
 ## 3. Syntax
@@ -32,8 +29,6 @@ d_m = signal2tensor2(signal_v, dir_m, b)
 
 ### The output argument is:
 * <i>d_m</i>: The diffusion tensor
-
-[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-signal2tensor2.md)
 
 ## 4. Example code
 
