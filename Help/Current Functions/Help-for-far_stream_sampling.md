@@ -50,7 +50,7 @@ the following code will allow the user to
 
 2.	Select the K=500 fiber tracts that most uniformly sample the muscle's volume; and
   
-3.	Return the resampled tracts.
+3.	Return the K resampled tracts and their indies into the original fiber tract matrix.
   
 % Call the function:
 
