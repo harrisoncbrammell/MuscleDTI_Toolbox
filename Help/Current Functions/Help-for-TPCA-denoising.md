@@ -3,11 +3,11 @@
 ## Introduction
 
 This help file contains information about
-1) [Purpose of the Program](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-TPCA_denoising.md#1-Purpose)
-2) [Usage of the Program](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-TPCA_denoising.md#2-Usage)
-3) [Syntax](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-TPCA_denoising.md#3-Syntax)
-4) [Example Code](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-TPCA_denoising.md#4-Example-Code)
-5) [Acknowledgements](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-TPCA_denoising.md#5-Acknowledgements)
+1) [Purpose of the Program](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-TPCA-denoising.md#1-Purpose)
+2) [Usage of the Program](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-TPCA-denoising.md#2-Usage)
+3) [Syntax](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-TPCA-denoising.md#3-Syntax)
+4) [Example Code](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-TPCA-denoising.md#4-Example-Code)
+5) [Acknowledgements](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-TPCA-denoising.md#5-Acknowledgements)
 
 ## 1. Purpose 
 This function performs 4-dimensional image denoising by exploiting data redundancy in the Principal Components Analysis (PCA) domain using threshold PCA denoising, as proposed by Henriques et al., Imaging Neuroscience, 2023 
