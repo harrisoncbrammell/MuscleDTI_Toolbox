@@ -21,8 +21,6 @@ The user provides the root directory of FSL and a structure containing all requi
 
 The user provides the root directory of FSL and a structure containing all required parameters (see [Syntax](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-eddy_correct.md#3-Syntax) for detailed description). The function first corrects the susceptibility induced distortions by invoking [<i>topup</i>](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/topup) from FSL, and then performs eddy current correction by invoking [<i>eddy</i>](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/eddy).
 
-[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-eddy_correct.md)
-
 ## 3. Syntax
 eddy_correct(FSL_dir, DTI_scan_info)
 
@@ -57,8 +55,6 @@ The input arguments are:
 
 There is no return value from this function. For the directories where the images are read and processed data saved, refer to [Example Code](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-eddy_correct.md#4-Example-Code) below.
 
-[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-eddy_correct.md)
-
 ## 4. Example Code
     % FSL root directory
     FSL_dir = '/usr/local/fsl';
@@ -86,8 +82,6 @@ There is no return value from this function. For the directories where the image
 
 In this example, the function reads image files <i>my/input_dir/my_DWI_img.nii</i> and <i>my/input_dir/my_DWI_img_b0.nii</i> and keeps a copy of unprocessed images in directory <i>my/output_dir/Subj09/active/s1/raw</i>. All data processed by <i>topup</i> and <i>eddy</i> are stored in directory <i>my/output_dir/Subj09/active/s1/eddy</i>
 
-[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-eddy_correct.md)
-
 ## 5. Useful Links
  * [A general tutorial for FSL Diffusion Toolbox](https://fsl.fmrib.ox.ac.uk/fslcourse/lectures/practicals/fdt1/index.html)
  * [FSL wiki for <i>topup</i>](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/topup)
@@ -97,5 +91,3 @@ In this example, the function reads image files <i>my/input_dir/my_DWI_img.nii</
 People: Kurt Schilling, Melissa Hooijmans
 
 Grant support: NIH/NIAMS R01 AR073831
-
-[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-eddy_correct.md)
