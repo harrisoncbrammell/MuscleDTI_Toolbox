@@ -1,4 +1,4 @@
-# Help for tpca_denoising
+# Help for [<i>tpca_denoising</i>](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Preprocessing-Functions/TPCA_denoising.m), v. 1.0.0.
 
 ## Introduction
 
@@ -12,12 +12,12 @@ This help file contains information about
 ## 1. Purpose 
 This function performs 4-dimensional image denoising by exploiting data redundancy in the Principal Components Analysis (PCA) domain using threshold PCA denoising, as proposed by Henriques et al., Imaging Neuroscience, 2023 
 
-[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-TPCA_denoising.md)
+[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-TPCA-denoising.md)
 
 ## 2. Usage
-The user inputs the image data, a mask defining the region to be denoised (optional), a window size for the PCA analysis (optional), and a matrix containing spatail noise variance estimates. The denosed data and the number of non-noise principal components are returned.
+The user inputs the image data, a mask defining the region to be denoised (optional)Current%20Functions/, a window size for the PCA analysis (optional), and a matrix containing spatail noise variance estimates. The denosed data and the number of non-noise principal components are returned.
 
-[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-TPCA_denoising.md)
+[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-TPCA-denoising.md)
 
 ## 3. Syntax
 [Signal, n_comps] = TPCA_denoising(data, mask, kernel, sampling, centering, noise_var) 
@@ -32,11 +32,11 @@ The output arguments are:
 * <i>Signal:</i> [x, y, z, M] denoised data matrix
 * <i>n_comps:</i> [x, y, z] number of non-noise pricipal components identified
 
-[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-TPCA_denoising.md)
+[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-TPCA-denoising.md)
 
-## 4. Example code
+## 4. Example codeCurrent%20Functions/
 
-[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-TPCA_denoising.md)
+[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-TPCA-denoising.md)
 
 ## 5. Acknowledgements
 Adapted from: MPPCAdenoising by Jelle Veraart (jelle.veraart@nyumc.org), Copyright (c) 2016 New York University and University of Antwerp and PCAdenoising by Rafael Neto Henriques (https://github.com/RafaelNH/PCAdenoising)
@@ -64,5 +64,5 @@ Henriques, R.N.; Ianus, A.; Novello, L.,; Jovicich, J.; Jespersen, S.N.; Shemesh
 Manjon, J.V.; Coupe, P.; Concha, L.; Buades, A.; Collins, D.L.;
 Robles, M. Diffusion weighted image denoising using overcomplete local PCA. PLoS One, 2013, doi: 10.1371/journal.pone.0073021
 
-[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-TPCA_denoising.md)
+[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-TPCA-denoising.md)
 
