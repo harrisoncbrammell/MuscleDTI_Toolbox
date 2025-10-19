@@ -1,23 +1,19 @@
-# Help for the function [<i>far_stream_sampling</i>](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Tractography-Functions/fiber_visualizer.m), v. 1.0.0
+# Help for the function [<i>far_stream_sampling</i>](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Tractography-Functions/far_stream_sampling.m), v. 1.0.0
 
 ## Introduction
 
 This help file contains information about
-1) [Purpose of the Program](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-fiber_visualizer.md#1-Purpose)
-2) [Usage of the Program](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-fiber_visualizer.md#2-Usage)
-3) [Syntax](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-fiber_visualizer.md#3-Syntax)
-5) [Example Code](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-fiber_visualizer.md#4-Example-Code)
-5) [Acknowledgements](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-fiber_visualizer.md#5-Acknowledgements)
+1) [Purpose of the Program](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-fiber_visualizer.md#1-Purpose)
+2) [Usage of the Program](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-fiber_visualizer.md#2-Usage)
+3) [Syntax](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-fiber_visualizer.md#3-Syntax)
+5) [Example Code](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-fiber_visualizer.md#4-Example-Code)
+5) [Acknowledgements](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-fiber_visualizer.md#5-Acknowledgements)
 
 ## 1. Purpose
 The function <i>far_stream_sampling</i> is used to uniformly sample fiber-tracts using the farthest streamline sampling method proposed by Li et al., IEEE Trans Biomed Eng, 2024.
 
-[Back to the Top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-far_stream_sampling.md)
-
 ## 2. Usage
 The user calls <i>far_stream_sampling</i> from the command line. The user must supply a fiber tract matrix having units of mm and specifiy the final number of tracts they wish to preserve (K) and the number of points to use when resampling the tracts (N) during the sampling process. The function preserves the set of K tracts that have the maximum total inter-tract distance, thereby maximizing the sampling uniformity across the muscle.
-
-[Back to the Top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-far_stream_sampling.md)
 
 ## 3. Syntax 
 [sampled_fiber_all_mm, sampled_fiber_all_idx] = far_stream_sampling(fiber_all_mm, sample_size, resampled_points)
@@ -35,8 +31,6 @@ The output arguments are:
  <i>sampled_fiber_all_mm</i>: The matrix including the K sampled fiber tracts.
 
  <i>sampled_fiber_all_idx</i>: The indices of the sampled fiber-tracts into the original fiber tract matrix.  This is a  1D array for voxel-seeded tracts or a 2D array for roi mesh-seeded tracts.
-
-[Back to the Top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-far_stream_sampling.md)
 
 ## 4. Example Code
 
@@ -59,13 +53,8 @@ sample_size = 500;
 resampled_points = 15;
 
 [sampled_fiber_all_mm, sampled_fiber_all_idx] = far_stream_sampling(fiber_all_mm, sample_size, resampled_points)
-
-[Back to the Top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-far_stream_sampling.md)
  
 ## 5. Acknowledgements
 People: Roberto Pineda Guzman
 
 Grant support: NIH/NIAMS R01 AR073831
-
-[Back to the Top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-far_stream_sampling.md)
- 
