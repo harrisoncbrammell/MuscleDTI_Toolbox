@@ -131,16 +131,20 @@ function [fiber_all, roi_flag, stop_list, fiber_len, seed_points] = ...
 %  anat_image: The structural images.
 %
 %OUTPUT ARGUMENTS
-%  fiber_all: The fiber tracts. The rows and columns correspond to locations
-%    on the roi_mesh. Dimension 3 gives point numbers on the tract, and the
-%    fourth dimension has row, column, and slice coordinates, with units of
-%    voxels.
+%  fiber_all: The fiber tracts. For aponeurosis seeding, the rows and columns 
+%    correspond to locations on the roi_mesh. For voxel-based seeding methods, the rows
+%    contain unique fiber tracts and the column dimension has a length of 1.  Although
+%    it does not contain any information in these cases, it is necessary to preserve
+%    the 4D dimensionality for subsequent processing steps.  Dimension 3 gives point 
+%    numbers on the tract, and the fourth dimension has row, column, and slice coordinates,
+%    with units of voxels.
 %
 %  roi_flag: A matrix indicating the presence of fiber tracts that propagated
 %    at least 1 point
 %
 %  stop_list: matrix containing the reason for fiber tract termination
-%    (4=mask, 3=curvature, 2=FA, or R (the last for FACT only))
+%    (4=mask, 3=curvature, or 2=FA; "1" is skipped to preserve compatibility with 
+%    previous versions).
 %
 %  fiber_len: the length, in points, of each fiber tract.
 %
@@ -168,6 +172,7 @@ function [fiber_all, roi_flag, stop_list, fiber_len, seed_points] = ...
 %   tract propagation time by inputing the e1fa matrix instead of the
 %   diffusion tensor matrix), 5 August 2025, Bruce Damon. Not backwards
 %   compatible to v. 1
+%  v. 2.0.1 (updated help section), 10 Oct 2025, Bruce Damon
 %
 %ACKNOWLEDGEMENTS
 %  People: Zhaohua Ding, Adam Anderson, Amanda Buck, Anneriet Heemskerk,
@@ -1791,6 +1796,7 @@ elseif numel(direction)==3                       %if a direction vector was inpu
 end
 
 return
+
 
 
 
