@@ -10,10 +10,9 @@ This help file contains information about
 5) [Example Code](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-define_roi.md#5-Example-Code)
 6) [Acknowledgements](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-define_roi.md#6-Acknowledgements)
 
-
 ## 1. Purpose
 
-The function <i>define_roi</i> is used to digitize the aponeurosis of muscle fiber insertion. The digitized points are used to reconstruct a mesh; the mesh is used as the seed surface for fiber tracking.  
+The function <i>define_roi</i> is used to digitize the aponeurosis of muscle fiber insertion. The digitized points are used to reconstruct a mesh; the mesh is used as the seed surface for fiber tracking when using aponeurosis-based seeding.  
 
 ## 2. Usage
 The mesh is a required input to [<i>fiber_track</i>](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Tractography-Functions/fiber_track.md) and [<i>fiber_quantifier</i>](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-fiber_quantifier.md); it may be visualized using [<i>fiber_visualizer</i>](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-fiber_visualizer.md). The required inputs are the anatomical image, the muscle mask, and a structure define the user's options for defining the mesh; an optional structure allows plotting of the results.  The output is the mesh reconstruction of the aponeurosis. There are two options for defining the aponeurosis:
@@ -39,8 +38,6 @@ A file called <i>roi_mesh_file.mat</i> is automatically saved in the working dir
 
 The mesh may be viewed using [<i>fiber_visualizer</i>](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-fiber_visualizer.md), either as part of the function call to <i>define_roi</i> or directly from the command line.
 
-[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-define_roi.md)
-
 ## 3. Automated Segmentation Algorithm
 The algorithm is illustrated in the figure below. In the first slice analyzed, the muscle mask is eroded (boundary pixels are removed) and then multiplied by the anatomical image slice. This resulting image includes only the pixels inside of the muscle of interest. Then, a k-means clustering algorithm is used to segment the remaining image data into three clusters.  The cluster corresponding to the highest signal intensities is assumed to represent the muscle.  The other clusters are presented to the user as the initial estimate of the aponeurosis’s location. Also, a Sobel edge detection is performed within the masked region of the image and used to estimate the aponeurosis location.  These images are combined using the weights [1, 1] for the k-means and edge regions, respectively; voxels with sums of 2 are included in the initial estimate. A Savitsky-Golay filter is applied to the pixel positions and used to form a smoothed curve that indicates the location of the roi_mesh points for that slice.  The user can correct pixel locations, as described above; the <i>roi_mesh</i> points are automatically updated.
 
@@ -50,8 +47,6 @@ alt="Figure S3" width="480" height="728" border="5" />
 <b><i>Flowchart of automated segmentation algorithm in define_roi</i></b>
 
 In subsequent slices, the preceding aponeurosis segmentation is incorporated into the initial estimate.  These images are combined using the weights [1, 1, 1.5] for the k-means, edge, and preceding regions, respectively; voxels with sums greater than 2 are included in the initial estimate. A Savitsky-Golay filter is applied to the pixel positions and used to form a smoothed curve that indicates the location of the roi_mesh points for that slice.  The user can correct pixel locations, as described above; the roi_mesh points are automatically updated.
-
-[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-define_roi.md)
 
 ## 4. Syntax
 The function define_roi is called using the following syntax:
@@ -82,8 +77,6 @@ The output arguments are:
 * <i>roi_mesh</i>: A 3D matrix containing the reconstructed mesh with size n_row x n_col x 6. In the 3rd dimension, levels 1-3 hold {row column slice} coordinates and levels 4-6 hold the {row column slice} components of the normal vector to the mesh surface at the point {row column slice}.
 * <i>roi_mask</i>: A 3D matrix containing a mask indicating the location of the aponeurosis. This can be useful as a fiber-tracking stop criterion or to account for the volume of non-contractile tissue. It can also be used to re-form the mesh at different density or following dilation.
 * <i>roi_mesh_dilated</i>: A dilated version of the <i>roi_mesh</i>, with the number of dilation steps set in the input argument dr_options.n_steps. 
-
-[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-define_roi.md)
 
 ## 5. Example Code
 
@@ -175,11 +168,7 @@ fv_options.mesh_color = [0.75 0.75 0.75]; %make the mesh light gray
 
 [roi_mesh, roi_mask, roi_mesh_dilated]=define_roi(anat_image, mask, dr_options, fv_options);
 
-[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-define_roi.md)
-
 ## 6. Acknowledgements
 People: Zhaohua Ding
 
 Grants: NIH/NIAMS R01 AR050101, NIH/NIAMS R01 AR073831
-
-[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-define_roi.md)
