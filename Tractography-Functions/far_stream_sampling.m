@@ -12,7 +12,7 @@ function [sampled_fiber_all_mm, sampled_fiber_all_idx] = far_stream_sampling(fib
 %  result in the largest distance between all pairs of tracts.
 %
 %  The user supplies the fiber_all_mm matrix, the desired final number of
-%  tracts, and the desired number of points N to use when resampling the
+%  tracts K, and the desired number of points N to use when resampling the
 %  tracts. The resampled fiber_all_mm matrix and the indices into the
 %  fiber_all_mm matrix are returned.
 %
@@ -27,13 +27,13 @@ function [sampled_fiber_all_mm, sampled_fiber_all_idx] = far_stream_sampling(fib
 %    tract matrix
 %
 %  resampled_points: Number of points to which the fiber-tracts will be
-%    resampled prior to the computation of the resampling distance, default
+%    resampled prior to the computation of the resampling distance; the default
 %    is 12
 %
 %OUTPUT ARGUMENTS
-%  sampled_fiber_all_mm: matrix including the sampled fiber tracts
+%  sampled_fiber_all_mm: The matrix including the sampled fiber tracts
 %
-%  sampled_fiber_all_idx: indices of the sampled fiber-tracts, 1D array for
+%  sampled_fiber_all_idx: The indices of the sampled fiber-tracts, 1D array for
 %    voxel-seeded tracts, 2D array for roi mesh-seeded tracts
 %
 %OTHER FUNCTIONS IN THE MUSCLE DTI FIBER-TRACKING TOOLBOX
@@ -164,4 +164,5 @@ function distance = min_direct_flip(u, v ,n_points)
     v_flipped = flip(v,1);
     d_flipped = 1/n_points*sum(vecnorm((u-v_flipped)'));
     distance = min(d_direct,d_flipped);
+
 end
