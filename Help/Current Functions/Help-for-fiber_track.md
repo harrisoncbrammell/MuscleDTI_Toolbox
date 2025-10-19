@@ -3,19 +3,17 @@
 ## Introduction
 
 This help file contains information about
-1) [Purpose of the Program](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-fiber_track.md#1-purpose)
-2) [Usage of the Program](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-fiber_track.md#2-usage)
-3) [Tracking Algorithms](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-fiber_track.md#3-tracking-algorithms)
-4) [Syntax](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-fiber_track.md#4-Syntax)
-5) [Example Code](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-fiber_track.md#5-Example-Code)
-6) [Acknowledgements](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-fiber_track.md#6-Acknowledgements)
+1) [Purpose of the Program](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-fiber_track.md#1-purpose)
+2) [Usage of the Program](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-fiber_track.md#2-usage)
+3) [Tracking Algorithms](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-fiber_track.md#3-tracking-algorithms)
+4) [Syntax](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-fiber_track.md#4-Syntax)
+5) [Example Code](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-fiber_track.md#5-Example-Code)
+6) [Acknowledgements](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-fiber_track.md#6-Acknowledgements)
 
 
 ## 1. Purpose
 
 The function <i>fiber_track</i> is used to fiber-track a muscle DTI dataset. 
-
-[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-fiber_track.md)
 
 ## 2. Usage
 The required inputs include a structure defining the fiber-tracking options; a 4D matrix with [row column slice] dimensions matching those of the DTMRI data and holding tracking-relevant diffusion data (first eigenvector, fractional anisotropy) at each voxel; and the muscle mask, output from <i>define_muscle</i> or other program. The options structure allows the user to set options such as the tracking algorithm, step size, laboratory frame of reference, seeding method, image orientation, and tract termination method. There are also several optional arguments, including the aponeurosis mesh (output from <i>define_roi</i>; necessary for aponeurosis-based tracking methods) and variables related to visualization. 
@@ -25,8 +23,6 @@ Fibers are tracked from the seed points according to the selected propagation al
 The outputs include the fiber tracts, variables describing the outcomes of the tracking, and selected data about the tracts.
 
 The fiber tracts may be viewed using [<i>fiber_visualizer_v11</i>](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-fiber_visualizer.md), either as part of the function call to <i>fiber_track</i> or directly from the command line.
-
-[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-fiber_track.md)
 
 ## 3. Tracking Algorithms
 
@@ -169,8 +165,6 @@ The variable <i>stop_list</i> is useful to diagnose the reasons of tract propaga
 #### Step 5:
   Add the point and continue tracking: If all criteria are successfully met, the next point is calculated and added to <i>fiber_all</i>. The fiber counter is incremented and the tract is recorded as a successful tracking result in the variable <i>roi_flag</i>. Steps 4 and 5 occur within the <i>while</i> loop and continue until a stop criterion is met.  At that point, the <i>while</i> loop breaks and the programs advances to the next seed point.
 
-[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-fiber_track.md)
-
 ## 4. Syntax
 
 [fiber_all, roi_flag, stop_list, fiber_len, seed_points] = fiber_track(ft_options, e1fa, mask, roi_mesh, fv_options, anat_image);
@@ -231,8 +225,6 @@ The output arguments are:
 * <i>fiber_len</i>: The length, in points, of each fiber tract. 
 
 * <i>seed_points</i>: for planar and voxel seeding methods, a variable called seed_points is created to hold the seed points. Including this in the list of output arguments allows the user to identify the seed point locations.
-
-[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-fiber_track.md)
 
 ## 5. Example Code
 ### Example 1: Aponeurosis seeding
@@ -366,13 +358,8 @@ fv_options.dti_dims = [192 7]; %FOV and ST of the DTI data
 
 [fiber_all, roi_flag, stop_list, fiber_len, seed_points] = fiber_track(ft_options, e1fa, mask, [], fv_options, anat_image);
 
-[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-fiber_track.md)
-
 ## 6. Acknowledgements
 
  People: Zhaohua Ding, Adam Anderson, Amanda Buck, Anneriet Heemskerk, and Justin Montenegro
  
- Grant support: NIH/NIAMS R01 AR050101, NIH/NIAMS R01 AR073831
- 
-[Back to the top](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Current%20Functions/Help-for-fiber_track.md)
- 
+ Grant support: NIH/NIAMS R01 AR050101, NIH/NIAMS R01 AR073831 
