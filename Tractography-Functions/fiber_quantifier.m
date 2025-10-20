@@ -3,7 +3,7 @@ function [angle_list, distance_list, curvature_list, fiber_all_mm, n_points, apo
 %
 % FUNCTION fiber_quantifier
 %  [angle_list, distance_list, curvature_list, fiber_all_mm, n_points, apo_area] = ...
-%    fiber_quantifier(fiber_all, roi_mesh, fq_options)
+%    fiber_quantifier(fq_options, fiber_all, roi_mesh, mask)
 %
 % USAGE
 %  The function fiber_quantifier, v. 2.0.0, is used to calculate the muscle 
@@ -591,3 +591,4 @@ end
 %% end the function
 
 return;
+
