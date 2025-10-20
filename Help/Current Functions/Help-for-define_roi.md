@@ -1,4 +1,4 @@
-# Help for the function [<i>define_roi</i>](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Tractography-Functions/define_roi.m), v. 1.1.0
+# Help for the function [<i>define_roi</i>](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Tractography-Functions/define_roi.m), v. 1.1.2
 
 ## Introduction
 
@@ -15,7 +15,7 @@ This help file contains information about
 The function <i>define_roi</i> is used to digitize the aponeurosis of muscle fiber insertion. The digitized points are used to reconstruct a mesh; the mesh is used as the seed surface for fiber tracking when using aponeurosis-based seeding.  
 
 ## 2. Usage
-The mesh is a required input to [<i>fiber_track</i>](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Tractography-Functions/fiber_track.md) and [<i>fiber_quantifier</i>](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-fiber_quantifier.md); it may be visualized using [<i>fiber_visualizer</i>](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-fiber_visualizer.md). The required inputs are the anatomical image, the muscle mask, and a structure define the user's options for defining the mesh; an optional structure allows plotting of the results.  The output is the mesh reconstruction of the aponeurosis. There are two options for defining the aponeurosis:
+The mesh is a required input to [<i>fiber_track</i>](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Tractography-Functions/fiber_track.md) and [<i>fiber_quantifier</i>](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-fiber_quantifier.md); it may be visualized using [<i>fiber_visualizer</i>](https://github.com/bdamon/MuscleDTI_Toolbox/blob/master/Help/Help-for-fiber_visualizer.md). The required inputs are the anatomical image, the muscle mask, and a structure specifying the user's options for defining the mesh; an optional structure allows plotting of the results.  The output is the mesh reconstruction of the aponeurosis. There are two options for defining the aponeurosis:
 1) <i>Manual selection</i>: A single figure window, containing three panels, is displayed. The center panel shows the current slice, the left-hand panel shows the preceding slice, and the right-hand panel shows the upcoming slice. An interactive tool is opened that allows the user to adjust the center panel's window and level settings. In the center panel, the edge locations of the mask are indicated. Text prompts in the command window guide the user through the following steps.  First, the user zooms the image to the area of interest, selecting Enter when finished. Then the user defines the aponeurosis with a series of left mouse clicks. The selected points can form a line or close to form a polygon. A right mouse click is used to complete the definition. At each slice, the user is given the option of repeating the procedure in case of error.
 
 2) <i>Automatic selection</i>: A single figure window, containing three panels, is displayed; each panel shows the current slice. The algorithm described in Section 3 is used to present an initial estimate of the aponeurosis’s location. This estimate is presented as magenta points in the left-hand panel. In the center panel, the edge locations of the mask are indicated and the initial segmentation results are shown as semi-transparent red pixels. In the right-hand panel, the smoothed edge pixels are shown for the segmented region (magenta points) and the dilated region (cyan points). The dilation process is discussed below.
@@ -51,7 +51,7 @@ In subsequent slices, the preceding aponeurosis segmentation is incorporated int
 ## 4. Syntax
 The function define_roi is called using the following syntax:
 
-[roi_mesh, roi_mask, roi_mesh_dilated]=define_roi(anat_image, mask, dr_options, fv_options);
+[roi_mesh, roi_mask, roi_mesh_dilated, roi_mask_dilated]=define_roi(anat_image, mask, dr_options, fv_options);
 
 The input arguments are:
 
@@ -76,7 +76,8 @@ The input arguments are:
 The output arguments are:
 * <i>roi_mesh</i>: A 3D matrix containing the reconstructed mesh with size n_row x n_col x 6. In the 3rd dimension, levels 1-3 hold {row column slice} coordinates and levels 4-6 hold the {row column slice} components of the normal vector to the mesh surface at the point {row column slice}.
 * <i>roi_mask</i>: A 3D matrix containing a mask indicating the location of the aponeurosis. This can be useful as a fiber-tracking stop criterion or to account for the volume of non-contractile tissue. It can also be used to re-form the mesh at different density or following dilation.
-* <i>roi_mesh_dilated</i>: A dilated version of the <i>roi_mesh</i>, with the number of dilation steps set in the input argument dr_options.n_steps. 
+* <i>roi_mesh_dilated</i>: A dilated version of the <i>roi_mesh</i>, with the number of dilation steps set in the input argument dr_options.n_steps.
+* <i>roi_mask_dilated</i>: A dilated version of the <i>roi_mask</i>, with the number of dilation steps set in the input argument dr_options.n_steps.
 
 ## 5. Example Code
 
@@ -166,7 +167,7 @@ fv_options.mesh_color = [0.75 0.75 0.75]; %make the mesh light gray
 
 % call the function:
 
-[roi_mesh, roi_mask, roi_mesh_dilated]=define_roi(anat_image, mask, dr_options, fv_options);
+[roi_mesh, roi_mask, roi_mesh_dilated, roi_mask_dilated]=define_roi(anat_image, mask, dr_options, fv_options);
 
 ## 6. Acknowledgements
 People: Zhaohua Ding
