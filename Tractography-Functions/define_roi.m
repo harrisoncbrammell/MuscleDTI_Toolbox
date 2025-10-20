@@ -1,11 +1,11 @@
-function [roi_mesh, roi_mask, roi_mesh_dilated]=define_roi(anat_image, mask, dr_options, fv_options)
+function [roi_mesh, roi_mask, roi_mesh_dilated,roi_mask_dilated]=define_roi(anat_image, mask, dr_options, fv_options)
 %
 % FUNCTION define_roi
 %  [roi_mesh, roi_mask, roi_mesh_dilated]=define_roi(anat_image, mask, dr_options, fv_options)
 %
 % USAGE
-%  The function define_roi, v. 1.1, is used to digitize the aponeurosis of muscle 
-%  fiber insertion in the MuscleDTI_Toolbox.  The digitized points are used to
+%  The function define_roi is used to digitize the aponeurosis of muscle fiber
+%  insertion in the MuscleDTI_Toolbox.  The digitized points are used to
 %  reconstruct a mesh; the mesh is used as the seed surface for fiber tracking.
 %
 %  The mesh is a required input to fiber_track, fiber_quantifier, and 
@@ -30,7 +30,7 @@ function [roi_mesh, roi_mask, roi_mesh_dilated]=define_roi(anat_image, mask, dr_
 %
 %  -Automatic segmentation: A single figure window, containing three panels, 
 %   is displayed; each panel shows the current slice. An initial estimate of 
-%   the aponeurosis’s location is presented. This estimate is presented as 
+%   the aponeurosiss location is presented. This estimate is presented as 
 %   magenta points in the left-hand panel. In the center panel, the edge 
 %   locations of the mask are indicated and the initial segmentation results 
 %   are shown as semi-transparent red pixels. In the right-hand panel, the 
@@ -108,16 +108,15 @@ function [roi_mesh, roi_mask, roi_mesh_dilated]=define_roi(anat_image, mask, dr_
 %  roi_mesh_dilated: A dilated version of the roi_mesh, with the number of
 %    dilation steps set in the input argument dr_options.n_steps.
 %
+%  roi_mask_dilated: A dilated version of the roi_mask, with the number of
+%    dilation steps set in the input argument dr_options.n_steps.
+%
 %OTHER FUNCTIONS IN THE MUSCLE DTI FIBER-TRACKING TOOLBOX
 %  For help with anisotropic smoothing, see <a href="matlab: help aniso4D_smoothing">aniso4D_smoothing</a>.
-%  For help with threshold PCA denoising, see <a href="matlab: help TPCA_denoising">TPCA_denoising</a>.
-%  For help with eddy current correction, see <a href="matlab: help eddy_correct">eddy_correct</a>.
 %  For help calculating the diffusion tensor, see <a href="matlab: help signal2tensor2">signal2tensor2</a>.
 %  For help defining the muscle mask, see <a href="matlab: help define_muscle">define_muscle</a>.
-%  For help defining the aponeurosis ROI, see <a href="matlab: help define_roi">define_roi</a>.
 %  For help with fiber tracking, see <a href="matlab: help fiber_track">fiber_track</a>.
 %  For help smoothing fiber tracts, see <a href="matlab: help fiber_smoother">fiber_smoother</a>.
-%  For help uniformly sampling the fiber tracts prior their quantification, see <a href="matlab: help far_stream_sampling">far_stream_sampling</a>.
 %  For help quantifying fiber tracts, see <a href="matlab: help fiber_quantifier">fiber_quantifier</a>.
 %  For help selecting fiber tracts following their quantification, see <a href="matlab: help fiber_goodness">fiber_goodness</a>.
 %  For help visualizing fiber tracts and other structures, see <a href="matlab: help fiber_visualizer">fiber_visualizer</a>.
@@ -125,7 +124,13 @@ function [roi_mesh, roi_mask, roi_mesh_dilated]=define_roi(anat_image, mask, dr_
 % VERSION INFORMATION
 %  v. 1.0.0 (initial release), 17 Jan 2021, Bruce Damon
 %  v. 1.1.0 (bug fix), 9 Jul 2021, Bruce Damon
-%  v. 1.1.1 (update help), 5 Aug 2025, Bruce Damon
+%  v. 1.1.1 (bug fix), 10 November 2023, Roberto Pineda Guzman, remove
+%  islands from aponeurosis segmentation, line 437
+%  v. 1.1.2 (bug fix), 24 April 2024, Roberto Pineda Guzman, resize mesh
+%  using bilinear interpolation with no antialiasing
+%  v. 1.1.3 (bug fix), 10 May 2024, Roberto Pineda Guzman, only create
+%  loop_mask if aponeurosis has been automatically or manually segmented, 
+%  output roi_mask_dilated when dr_options.method='mask'
 %
 % ACKNOWLEDGMENTS
 %  People: Zhaohua Ding
@@ -237,6 +242,7 @@ switch select_method
                 
                 %dilate the mask
                 loop_mask_dilated = bwmorph(loop_mask, 'dilate', n_steps);
+                roi_mask_dilated(:,:,curr_slice)=loop_mask_dilated;
                 
                 %get the edge pixels of the dilated mask/smooth them
                 edge_pixels_dilated = bwboundaries(loop_mask_dilated);
@@ -437,6 +443,7 @@ switch select_method
             end
             apo_segmented=bwmorph(apo_segmented, 'clean');                      %remove isolated pixels
             apo_segmented=bwmorph(apo_segmented, 'close');
+            apo_segmented=bwareaopen(apo_segmented,3);                          %remove islands smaller < 3 pixels
             apo_segmented_initial(:,:,curr_slice)=apo_segmented;
             
             %visualize/correct
@@ -478,11 +485,11 @@ switch select_method
                 edge_xy_smooth(:,1)=smooth(edge_xy(:,1), 'sgolay');
                 edge_xy_smooth(end,:)=edge_xy_smooth(1,:);
                 plot(edge_xy_smooth(:,2), edge_xy_smooth(:,1), 'm.', 'markersize', 8);
+
+                 %form a mask from the roi points/add to roi_mask matrix
+                loop_mask=roipoly(squeeze(loop_img_rgb(:,:,1)), edge_xy_smooth(:,2), edge_xy_smooth(:,1));
+                roi_mask(:,:,curr_slice) = loop_mask;
             end
-            
-            %form a mask from the roi points/add to roi_mask matrix
-            loop_mask=roipoly(squeeze(loop_img_rgb(:,:,1)), edge_xy_smooth(:,2), edge_xy_smooth(:,1));
-            roi_mask(:,:,curr_slice) = loop_mask;
             
             % view dilated points
             if dilate_mesh>0
@@ -1035,9 +1042,9 @@ roi_surfz=roi_surfz*double(dti_size(3))/sz_work_imag(3);
 
 %resample to desired size:
 roi_mesh = zeros(n_row, n_col, 6);
-roi_mesh(:,:,1)=imresize(roi_surfx(frst_slice:last_slice,:), [n_row n_col]);
-roi_mesh(:,:,2)=imresize(roi_surfy(frst_slice:last_slice,:), [n_row n_col]);
-roi_mesh(:,:,3)=imresize(roi_surfz(frst_slice:last_slice,:), [n_row n_col]);
+roi_mesh(:,:,1)=imresize(roi_surfx(frst_slice:last_slice,:), [n_row n_col],'bilinear',Antialiasing=false);
+roi_mesh(:,:,2)=imresize(roi_surfy(frst_slice:last_slice,:), [n_row n_col],'bilinear',Antialiasing=false);
+roi_mesh(:,:,3)=imresize(roi_surfz(frst_slice:last_slice,:), [n_row n_col],'bilinear',Antialiasing=false);
 
 % find normal to mesh at each point:
 mesh_row_vec = circshift(roi_mesh(:, :, 1:3), [0 -1 0]) - roi_mesh(:, :, 1:3);
@@ -1071,9 +1078,9 @@ if dilate_mesh>0
     
     %resample to desired size:
     roi_mesh_dilated = zeros(n_row, n_col, 6);
-    roi_mesh_dilated(:,:,1)=imresize(roi_surfx_dilated(frst_slice:last_slice,:), [n_row n_col]);
-    roi_mesh_dilated(:,:,2)=imresize(roi_surfy_dilated(frst_slice:last_slice,:), [n_row n_col]);
-    roi_mesh_dilated(:,:,3)=imresize(roi_surfz_dilated(frst_slice:last_slice,:), [n_row n_col]);
+    roi_mesh_dilated(:,:,1)=imresize(roi_surfx_dilated(frst_slice:last_slice,:), [n_row n_col],'bilinear',Antialiasing=false);
+    roi_mesh_dilated(:,:,2)=imresize(roi_surfy_dilated(frst_slice:last_slice,:), [n_row n_col],'bilinear',Antialiasing=false);
+    roi_mesh_dilated(:,:,3)=imresize(roi_surfz_dilated(frst_slice:last_slice,:), [n_row n_col],'bilinear',Antialiasing=false);
     
     % find normal to mesh at each point:
     mesh_row_vec_dilated = circshift(roi_mesh_dilated(:, :, 1:3), [0 -1 0]) - roi_mesh_dilated(:, :, 1:3);
@@ -1131,4 +1138,5 @@ end
 
 %% end the function
 return;
+
 
