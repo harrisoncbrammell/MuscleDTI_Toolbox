@@ -421,9 +421,9 @@ switch seed_method
                             seed_point;
                         r_vector = r_vector/norm(r_vector);                                          	%convert to unit vector
 
-                        theta_degrees = asind(dot(r_vector, n_vector));                    	%theta is the complement to that formed by the normal vector and the position vector
-                        if theta_degrees <0 || theta_degrees >90                                        %account for direction of normal vector
-                            theta_degrees = asind(dot(r_vector, -n_vector));
+                        gamma_degrees = asind(dot(r_vector, n_vector));                    	%gamma is the complement to that formed by the normal vector and the position vector
+                        if gamma_degrees <0 || gamma_degrees >90                                        %account for direction of normal vector
+                            gamma_degrees = asind(dot(r_vector, -n_vector));
                         end
 
                         alpha_degrees = acosd(dot(r_vector, c_vector));                    	        %alpha is the complement to that formed by the normal vector and the position vector
@@ -436,12 +436,12 @@ switch seed_method
                             angle_list(row_cntr,col_cntr,fiber_cntr,1) = 0;
                         end
 
-                        angle_list(row_cntr,col_cntr,fiber_cntr,2) = theta_degrees;                  	%write to matrix
+                        angle_list(row_cntr,col_cntr,fiber_cntr,2) = gamma_degrees;                  	%write to matrix
                         if isnan(angle_list(row_cntr,col_cntr,fiber_cntr,2))                         	%in case of dividing by zero
                             angle_list(row_cntr,col_cntr,fiber_cntr,2) = 0;
                         end
 
-                        angle_list(row_cntr,col_cntr,fiber_cntr,3) = alpha_degrees - theta_degrees;  %beta = theta - alpha
+                        angle_list(row_cntr,col_cntr,fiber_cntr,3) = alpha_degrees - gamma_degrees;  %beta = theta - alpha
 
                         %keep track of number of points quantified.
                         n_points(row_cntr,col_cntr,1) = fiber_cntr;                                 %In 3rd dimension, save #points for distance data in level 1
