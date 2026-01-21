@@ -51,21 +51,48 @@ clear series_path file_list num_files idx temp_vol i currentFile vol_data info s
 
 %% 2. Masking muscle of interest
 
-anat_image = dti_all_unreg(:, :, :, 1);
+% Extract the anatomical volume (Volume 1)
+vol_to_segment = dti_all_unreg(:, :, :, 1);
 
-% Define the slice range (process all slices)
-% Input format is [Start_Slice, End_Slice]
-slice_range = [1, slices]; 
+% Open the app with this data loaded
+volumeSegmenter(vol_to_segment)
 
-% Define options (leave empty to skip complex features)
-alt_mask_size = []; % We don't need to resize since we are working in DTI space
-fv_options = [];    % Skip advanced visualization for now
+pd_mask = load(uigetfile('Select the mask'));
 
-fprintf("Opening Manual Segmentation Tool...\n");
-fprintf("Instructions:\n");
-fprintf("  1. Left-click to draw points around the muscle.\n");
-fprintf("  2. Right-click inside the shape and select 'Create Mask' to finish a slice.\n");
-fprintf("  3. Repeat for all slices.\n");
+fprintf("Mask succesfully loaded!\n");
 
-% Call the toolbox function
-[pd_mask, ~] = define_muscle(anat_image, slice_range, alt_mask_size, fv_options);
+%% 3. Registration/Eddy Current Correction (if this fails try eddy from fsl)
+
+fprintf('Starting Registration (this may take time)...\n');
+
+if isstruct(pd_mask) % ensure data loaded in as matrix
+    fields = fieldnames(pd_mask);
+    pd_mask = pd_mask.(fields{1});
+    fprintf("Fixed pd_mask struct. Now it is a matrix.\n");
+end
+
+fprintf('Starting Registration (Slice-by-Slice using Demons)...\n');
+
+dti_all_reg = zeros(size(dti_all_unreg));
+[rows, cols, slcs, total_vols] = size(dti_all_unreg);
+
+dti_all_reg(:, :, :, 1) = dti_all_unreg(:, :, :, 1); % volume 1 is our fixed reference b=0
+
+for v = 2:total_vols %for each volume
+    fprintf('  Registering Volume %d of %d...\n', v, total_vols);
+    for z = 1:slcs % for each slice in each volume
+        fixed_slice = dti_all_unreg(:, :, z, 1); % get reference point and slice that is to be corrected
+        moving_slice = dti_all_unreg(:, :, z, v);
+        fixed_norm = fixed_slice / max(fixed_slice(:)); % normalize
+        moving_norm = moving_slice / max(moving_slice(:));
+
+        % calculate displacment field
+        [disp_field, ~] = imregdemons(moving_norm, fixed_norm, [500 400 200], 'AccumulatedFieldSmoothing', 1.3, 'DisplayWaitbar', false);
+
+        dti_all_reg(:, :, z, v) = imwarp(moving_slice, disp_field); % apply the warp to the slice
+    end
+end
+
+save('dti_registered.mat', 'dti_all_reg', 'pd_mask', 'bvect', '-v7.3');
+
+fprintf('Registration Complete! Variable "dti_all_reg" created.\n');
