@@ -49,6 +49,9 @@ fprintf("Done with loading!\n");
 
 clear series_path file_list num_files idx temp_vol i currentFile vol_data info seq vec bval_list b0_inds dwi_inds b0_avg dwi_data
 
+save('dti_all_unreg.mat', 'dti_all_unreg', '-v7.3');
+save('bvect.mat', 'bvect');
+
 %% 1.2 Load anatomical volume (if available)
 [anat_file, anat_dir] = uigetfile('*.dcm', 'Select the anatomical volume (if available, otherwise click cancel)');
 
@@ -61,11 +64,12 @@ else
     %resize anatomical volume to match DTI dimensions (if necessary)
     fprintf('Resizing Anatomical data to match DTI geometry...\n')
 
-    [target_rows, target_cols, target_slices, ~] = size(dti_all_unreg)
+    [target_rows, target_cols, target_slices, ~] = size(dti_all_unreg);
     anat_vol = imresize3(anat_vol, [target_rows, target_cols, target_slices]); %weighted avg of 8 closest pixels in 3d space to resize the anatomical volume to match the DTI dimensions
 
-    printf('Resizing complete!\n');
-    clear anat_filename anat_filepath full_anat_path anat_orig target_rows target_cols target_slices
+    fprintf('Resizing complete!\n');
+    clear anat_file anat_dir target_rows target_cols target_slices
+    save('anat_vol.mat', 'anat_vol', '-v7.3');
 end
 
 %% 2.1 Masking muscle of interest manually
@@ -114,6 +118,9 @@ for z = 1:slices
     pd_mask(:,:,z) = loop_mask;
 end
 
+clear z loop_image threshold loop_mask
+save('pd_mask.mat', 'pd_mask', '-v7.3');
+
 %% 2.3 Upload mask from mat file
 pd_mask = load(uigetfile('Select the mask'));
 
@@ -127,37 +134,80 @@ fprintf("Mask succesfully loaded!\n");
 
 fprintf('Starting Registration (this may take time)...\n');
 
-if isstruct(pd_mask) % ensure data loaded in as matrix
+% ensure data loaded in as matrix
+if isstruct(pd_mask) 
     fields = fieldnames(pd_mask);
     pd_mask = pd_mask.(fields{1});
     fprintf("Fixed pd_mask struct. Now it is a matrix.\n");
 end
 
-fprintf('Starting Registration (Slice-by-Slice using Demons)...\n');
-
-dti_all_reg = zeros(size(dti_all_unreg));
+% setup volumes and pre-allocate
 [rows, cols, slcs, total_vols] = size(dti_all_unreg);
+dti_all_reg = zeros(size(dti_all_unreg));
 
-dti_all_reg(:, :, :, 1) = dti_all_unreg(:, :, :, 1); % volume 1 is our fixed reference b=0
+% determine the fixed reference image
+if exist('anat_vol', 'var') && ~isempty(anat_vol)
+    fprintf('Using Anatomical volume as fixed reference for registration.\n');
+    fixed_vol = anat_vol;
+    using_anat = true;
+else
+    fprintf('Using average b=0 volume as fixed reference for registration.\n');
+    fixed_vol = dti_all_unreg(:, :, :, 1);
+    using_anat = false;
+    dti_all_reg(:, :, :, 1) = dti_all_unreg(:, :, :, 1); % b=0 is perfectly aligned with itself
+end
 
-for v = 2:total_vols %for each volume
+% ---ABOVE CODE COULD BE USED FOR BOTH DEMONS AND FSL EDDY REGISTRATION METHODS---
+
+fprintf('Starting Slice-by-Slice Demons Registration...\n');
+
+for v = 1:total_vols 
+    % Skip this loop iteration registering the b=0 image to itself if we aren't using an anatomical reference
+    if ~using_anat && v == 1
+        continue; 
+    end
+
     fprintf('  Registering Volume %d of %d...\n', v, total_vols);
-    for z = 1:slcs % for each slice in each volume
-        fixed_slice = dti_all_unreg(:, :, z, 1); % get reference point and slice that is to be corrected
+    
+    for z = 1:slcs 
+        % Grab the slices and current mask
+        fixed_slice = fixed_vol(:, :, z); 
         moving_slice = dti_all_unreg(:, :, z, v);
-        fixed_norm = fixed_slice / max(fixed_slice(:)); % normalize
-        moving_norm = moving_slice / max(moving_slice(:));
+        current_mask = pd_mask(:, :, z);
 
-        % calculate displacment field
+        % Apply mask BEFORE normalization to isolate the muscle contrast
+        fixed_masked = fixed_slice .* current_mask;
+        moving_masked = moving_slice .* current_mask;
+
+        % Safely normalize (Skip registration for this slice if the mask is empty)
+        fixed_max = max(fixed_masked(:));
+        moving_max = max(moving_masked(:));
+        
+        if fixed_max > 0 && moving_max > 0
+            fixed_norm = fixed_masked / fixed_max; 
+            moving_norm = moving_masked / moving_max;
+        else
+            dti_all_reg(:, :, z, v) = moving_slice; % Copy original and skip
+            continue;
+        end
+
+        % THE CONTRAST HACK: Apply only when registering b=0 to Anatomical
+        if using_anat && v == 1 
+            moving_norm(moving_norm > 0.5) = 0.5; % Flatten out bright blood vessels
+            moving_norm = moving_norm * 2;        % Scale up to match anatomical brightness
+        end
+
+        % Calculate displacement field and apply the warp to the UNMASKED original slice
         [disp_field, ~] = imregdemons(moving_norm, fixed_norm, [500 400 200], 'AccumulatedFieldSmoothing', 1.3, 'DisplayWaitbar', false);
-
-        dti_all_reg(:, :, z, v) = imwarp(moving_slice, disp_field); % apply the warp to the slice
+        dti_all_reg(:, :, z, v) = imwarp(moving_slice, disp_field); 
     end
 end
 
-save('dti_registered.mat', 'dti_all_reg', 'pd_mask', 'bvect', '-v7.3');
+% save the output
+save('dti_all_reg.mat', 'dti_all_reg', '-v7.3');
+fprintf('Registration Complete! Variable "dti_all_reg" saved.\n');
 
-fprintf('Registration Complete! Variable "dti_all_reg" created.\n');
+clear fields rows cols slcs total_vols fixed_vol using_anat v z fixed_slice moving_slice current_mask fixed_masked moving_masked fixed_max moving_max fixed_norm moving_norm disp_field
 
 %% 3.2 FSL Eddy based registraton method
 
