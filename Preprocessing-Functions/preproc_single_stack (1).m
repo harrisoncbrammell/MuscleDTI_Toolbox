@@ -1,4 +1,4 @@
-%% 1.1 Load diffusion files into single 4d array
+%% 1. Load files into single 4d array
 series_path = uigetdir(pwd, 'Select the Folder containing the DTI DICOMs series');
 
 cd(series_path);
@@ -49,65 +49,17 @@ fprintf("Done with loading!\n");
 
 clear series_path file_list num_files idx temp_vol i currentFile vol_data info seq vec bval_list b0_inds dwi_inds b0_avg dwi_data
 
-%% 1.2 Load anatomical volume (if available)
-[anat_file, anat_dir] = uigetfile('*.dcm', 'Select the anatomical volume (if available, otherwise click cancel)');
+%% 2. Masking muscle of interest
 
-if isequal(anat_file, 0)
-    fprintf("No anatomical volume selected. Using average b=0 image for anatomical reference.\n");
-    anat_vol = dti_all_unreg(:, :, :, 1);
-else
-    fprintf("Loading anatomical volume...\n");
-    anat_vol = squeeze(double(dicomread(fullfile(anat_dir, anat_file))));
-    
-    %resize anatomical volume to match DTI dimensions (if necessary)
-    fprintf('Resizing Anatomical data to match DTI geometry...\n')
-
-    [target_rows, target_cols, target_slices, ~] = size(dti_all_unreg)
-    anat_vol = imresize3(anat_vol, [target_rows, target_cols, target_slices]); %weighted avg of 8 closest pixels in 3d space to resize the anatomical volume to match the DTI dimensions
-
-    printf('Resizing complete!\n');
-    clear anat_filename anat_filepath full_anat_path anat_orig target_rows target_cols target_slices
-end
-
-%% 2.1 Masking muscle of interest manually
+% Extract the anatomical volume (Volume 1)
+vol_to_segment = dti_all_unreg(:, :, :, 1);
 
 % Open the app with this data loaded
-volumeSegmenter(anat_vol)
+volumeSegmenter(vol_to_segment)
 
-%% 2.2 Otsu's Method for automatic masking
-
-fprintf("Automatically generating mask...\n");
-
-pd_mask = zeros(size(anat_vol));
-
-for z = 1:slices
-    loop_image = anat_vol(:,:,z);
-    
-    % Normalize the slice
-    if max(loop_image(:)) > 0
-        loop_image = loop_image / max(loop_image(:)); 
-    end
-    
-    % Form mask using Otsu's threshold
-    loop_mask = zeros(rows, cols);
-    threshold = graythresh(loop_image); 
-    loop_mask(loop_image > threshold) = 1;
-    
-    % Morphological cleanup (fill holes, erode edges to remove skin/subcutaneous fat)
-    loop_mask = imfill(loop_mask, 'holes');
-    loop_mask = bwmorph(loop_mask, 'erode', 2); % You may need to adjust the '2' based on the dataset
-    
-    pd_mask(:,:,z) = loop_mask;
-end
-
-%% 2.3 Upload mask from mat file
 pd_mask = load(uigetfile('Select the mask'));
 
 fprintf("Mask succesfully loaded!\n");
-
-%% 2.4 Upload mask from nifti file (if this fails try loading from mat file)\
-
-%TODO: add nifti loading functionality here (using niftiread and niftiinfo)
 
 %% 3. Registration/Eddy Current Correction (if this fails try eddy from fsl)
 
