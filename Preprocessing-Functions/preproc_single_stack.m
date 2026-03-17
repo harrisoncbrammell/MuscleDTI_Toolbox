@@ -53,8 +53,7 @@ clear series_path file_list num_files idx temp_vol i currentFile vol_data info s
 [anat_file, anat_dir] = uigetfile('*.dcm', 'Select the anatomical volume (if available, otherwise click cancel)');
 
 if isequal(anat_file, 0)
-    fprintf("No anatomical volume selected. Using average b=0 image for anatomical reference.\n");
-    anat_vol = dti_all_unreg(:, :, :, 1);
+    fprintf("No anatomical volume selected.\n");
 else
     fprintf("Loading anatomical volume...\n");
     anat_vol = squeeze(double(dicomread(fullfile(anat_dir, anat_file))));
@@ -71,12 +70,27 @@ end
 
 %% 2.1 Masking muscle of interest manually
 
+% Check for existing anatomical volume, otherwise use average b=0 image
+if ~exist('anat_vol', 'var')
+    fprintf("No anatomical volume found. Using average b=0 image for anatomical reference.\n");
+    anat_vol = dti_all_unreg(:, :, :, 1); 
+else
+    fprintf("Using existing anatomical volume for reference.\n")
+end
 % Open the app with this data loaded
 volumeSegmenter(anat_vol)
 
 %% 2.2 Otsu's Method for automatic masking
 
 fprintf("Automatically generating mask...\n");
+
+% Check for existing anatomical volume, otherwise use average b=0 image
+if ~exist('anat_vol', 'var')
+    fprintf("No anatomical volume found. Using average b=0 image for anatomical reference.\n");
+    anat_vol = dti_all_unreg(:, :, :, 1); 
+else
+    fprintf("Using existing anatomical volume for reference.\n");
+end
 
 pd_mask = zeros(size(anat_vol));
 
