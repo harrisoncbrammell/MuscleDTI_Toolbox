@@ -123,7 +123,7 @@ fprintf("Mask succesfully loaded!\n");
 
 %TODO: add nifti loading functionality here (using niftiread and niftiinfo)
 
-%% 3. Registration/Eddy Current Correction (if this fails try eddy from fsl)
+%% 3.1 Demons registration method
 
 fprintf('Starting Registration (this may take time)...\n');
 
@@ -158,3 +158,7 @@ end
 save('dti_registered.mat', 'dti_all_reg', 'pd_mask', 'bvect', '-v7.3');
 
 fprintf('Registration Complete! Variable "dti_all_reg" created.\n');
+
+%% 3.2 FSL Eddy based registraton method
+
+%TODO: base of off exhisting implementation in eddy_correct.m
