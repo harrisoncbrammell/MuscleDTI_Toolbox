@@ -1,5 +1,4 @@
 %% 1.1 Load diffusion files into single 4d array
-%% 1.1 Load diffusion files into single 4d array
 series_path = uigetdir(pwd, 'Select the Folder containing the DTI DICOMs series');
 
 cd(series_path);
@@ -72,10 +71,16 @@ bvect = bvect(dwi_inds, :);
 % Extract the single diffusion b-value for tensor calculation later
 bval = max(bval_list); 
 
+% Default to false (will be overwritten if Section 1.2 is run successfully)
+using_anat = false;
+
 fprintf("Done with loading!\n");
 
+% Clean up workspace, explicitly keeping our new variables (dti_dims, bval, and using_anat)
 clear series_path file_list num_files idx temp_info dti_slice_thick dti_fov temp_vol i currentFile vol_data info seq vec bval_list b0_inds dwi_inds b0_avg dwi_data
-save('dti_all_unreg.mat', 'dti_all_unreg', 'dti_dims', '-v7.3');
+
+% Save the DTI volume, dimensions, gradient vectors, the b-value, and the anatomical flag
+save('dti_all_unreg.mat', 'dti_all_unreg', 'dti_dims', 'using_anat', '-v7.3');
 save('bvect.mat', 'bvect', 'bval');
 
 %% 1.2 Load anatomical volume (if available)
@@ -94,8 +99,8 @@ else
     if isfield(anat_info, 'SliceThickness')
         anat_slice_thick = anat_info.SliceThickness;
     else
-        anat_slice_thick = 4; % Fallback if missing
-        fprintf('WARNING: Could not find Anatomical Slice Thickness. Defaulting to 4mm.\n');
+        anat_slice_thick = 7; % Fallback if missing
+        fprintf('WARNING: Could not find Anatomical Slice Thickness. Defaulting to 7mm.\n');
     end
     
     if isfield(anat_info, 'PixelSpacing')
@@ -112,6 +117,7 @@ else
     % Resize anatomical volume to match DTI dimensions
     fprintf('Resizing Anatomical data to match DTI geometry...\n');
     [target_rows, target_cols, target_slices, ~] = size(dti_all_unreg);
+    
     % Use 'linear' (trilinear) interpolation to prevent Gibbs ringing artifacts
     anat_vol = imresize3(anat_vol, [target_rows, target_cols, target_slices], 'linear'); 
     
@@ -122,39 +128,50 @@ else
         fprintf('WARNING: dti_dims variable not found in workspace. Make sure Section 1.1 extracted it!\n');
     end
     
+    % Successfully loaded and resized an anatomical image, so overwrite the flag
+    using_anat = true;
+    
     fprintf('Resizing complete!\n');
 end
 
+% Clean up temporary variables
 clear anat_file anat_dir target_rows target_cols target_slices full_anat_path anat_info anat_slice_thick anat_fov
 
 %% 2.1 Masking muscle of interest manually
 
-% Check for existing anatomical volume, otherwise use average b=0 image
-if ~exist('anat_vol', 'var')
-    fprintf("No anatomical volume found. Using average b=0 image for anatomical reference.\n");
-    anat_vol = dti_all_unreg(:, :, :, 1); 
+% Use a temporary reference volume so we don't trick Section 3
+if exist('using_anat', 'var') && using_anat && exist('anat_vol', 'var')
+    fprintf("Using existing anatomical volume for reference.\n");
+    ref_vol = anat_vol;
 else
-    fprintf("Using existing anatomical volume for reference.\n")
+    fprintf("No anatomical volume found. Using average b=0 image for anatomical reference.\n");
+    ref_vol = dti_all_unreg(:, :, :, 1); 
 end
+
 % Open the app with this data loaded
-volumeSegmenter(anat_vol)
+volumeSegmenter(ref_vol)
+
+clear ref_vol % Keep workspace clean
 
 %% 2.2 Otsu's Method for automatic masking
 
 fprintf("Automatically generating mask...\n");
 
-% Check for existing anatomical volume, otherwise use average b=0 image
-if ~exist('anat_vol', 'var')
-    fprintf("No anatomical volume found. Using average b=0 image for anatomical reference.\n");
-    anat_vol = dti_all_unreg(:, :, :, 1); 
-else
+% Use a temporary reference volume
+if exist('using_anat', 'var') && using_anat && exist('anat_vol', 'var')
     fprintf("Using existing anatomical volume for reference.\n");
+    ref_vol = anat_vol;
+else
+    fprintf("No anatomical volume found. Using average b=0 image for anatomical reference.\n");
+    ref_vol = dti_all_unreg(:, :, :, 1); 
 end
 
-pd_mask = zeros(size(anat_vol));
+% Explicitly define dimensions so the loop doesn't crash
+[rows, cols, slices] = size(ref_vol);
+pd_mask = zeros(rows, cols, slices);
 
 for z = 1:slices
-    loop_image = anat_vol(:,:,z);
+    loop_image = ref_vol(:,:,z);
     
     % Normalize the slice
     if max(loop_image(:)) > 0
@@ -173,11 +190,19 @@ for z = 1:slices
     pd_mask(:,:,z) = loop_mask;
 end
 
-clear z loop_image threshold loop_mask
+% Clean up all temporary variables
+clear z loop_image threshold loop_mask ref_vol rows cols slices
 save('pd_mask.mat', 'pd_mask', '-v7.3');
+fprintf("Mask succesfully generated and saved!\n");
 
 %% 2.3 Upload mask from mat file
-pd_mask = load(uigetfile('Select the mask'));
+pd_mask = load(uigetfile('*.mat', 'Select the mask'));
+
+% Ensure data is loaded in as a matrix, not a struct
+if isstruct(pd_mask) 
+    fields = fieldnames(pd_mask);
+    pd_mask = pd_mask.(fields{1});
+end
 
 fprintf("Mask succesfully loaded!\n");
 
@@ -189,15 +214,17 @@ fprintf("Mask succesfully loaded!\n");
 
 fprintf("Starting manual segmentation using define_muscle...\n");
 
-if ~exist('anat_vol', 'var')
-    fprintf("No anatomical volume found. Using average b=0 image for anatomical reference.\n");
-    anat_vol = dti_all_unreg(:, :, :, 1); 
+% Use a temporary reference volume
+if exist('using_anat', 'var') && using_anat && exist('anat_vol', 'var')
+    fprintf("Using existing anatomical volume for reference.\n");
+    ref_vol = anat_vol;
 else
-    fprintf("Using existing anatomical volume for reference.\n")
+    fprintf("No anatomical volume found. Using average b=0 image for anatomical reference.\n");
+    ref_vol = dti_all_unreg(:, :, :, 1); 
 end
 
 % determine total slices available
-total_slices = size(anat_vol, 3);
+total_slices = size(ref_vol, 3);
 
 % prompt user for the slice range they want to segment
 prompt = {sprintf('Enter starting slice (1-%d):', total_slices), ...
@@ -226,54 +253,53 @@ else
     fv_options.plot_mask = 1;   
     fv_options.plot_fibers = 0; 
     
-    fv_options.mask_size = [size(anat_vol, 1) size(anat_vol, 2)];
+    fv_options.mask_size = [size(ref_vol, 1) size(ref_vol, 2)];
     fv_options.mask_dims = current_dims; % Automatically sets to [FOV SliceThickness]
     fv_options.mask_color = [1 0 0];
 
     fprintf("Interactive window opening. Follow the define_muscle instructions.\n");
     
-    % call the function
-    [pd_mask, ~] = define_muscle(anat_vol, slices_to_segment, [], fv_options);
+    % call the function using our temporary reference volume
+    [pd_mask, ~] = define_muscle(ref_vol, slices_to_segment, [], fv_options);
     
     save('pd_mask.mat', 'pd_mask', '-v7.3');
     fprintf("define_muscle complete! Variable 'pd_mask' saved to disk.\n");
 end
 
-clear total_slices prompt dlgtitle dims definput answer slices_to_segment fv_options
+clear total_slices prompt dlgtitle dims definput answer slices_to_segment fv_options ref_vol current_dims
 
 %% 3.1 Demons registration method
 
-fprintf('Starting Registration (this may take time)...\n');
+fprintf('Starting Registration (this may take time)....\n');
 
-% ensure data loaded in as matrix
+% 1. Ensure the mask is a clean matrix
 if isstruct(pd_mask) 
     fields = fieldnames(pd_mask);
     pd_mask = pd_mask.(fields{1});
     fprintf("Fixed pd_mask struct. Now it is a matrix.\n");
 end
 
-% setup volumes and pre-allocate
+% 2. Setup volumes and pre-allocate
 [rows, cols, slcs, total_vols] = size(dti_all_unreg);
 dti_all_reg = zeros(size(dti_all_unreg));
 
-% determine the fixed reference image
-if exist('anat_vol', 'var') && ~isempty(anat_vol)
+% 3. Determine the fixed reference image using our flag
+if exist('using_anat', 'var') && using_anat && exist('anat_vol', 'var')
     fprintf('Using Anatomical volume as fixed reference for registration.\n');
     fixed_vol = anat_vol;
-    using_anat = true;
 else
     fprintf('Using average b=0 volume as fixed reference for registration.\n');
     fixed_vol = dti_all_unreg(:, :, :, 1);
-    using_anat = false;
+    using_anat = false; % enforce false just in case
     dti_all_reg(:, :, :, 1) = dti_all_unreg(:, :, :, 1); % b=0 is perfectly aligned with itself
 end
 
-% ---ABOVE CODE COULD BE USED FOR BOTH DEMONS AND FSL EDDY REGISTRATION METHODS---
-
+% 4. The Registration Loop
 fprintf('Starting Slice-by-Slice Demons Registration...\n');
 
 for v = 1:total_vols 
-    % Skip this loop iteration registering the b=0 image to itself if we aren't using an anatomical reference
+    
+    % Skip registering the b=0 image to itself if we aren't using an anatomical reference
     if ~using_anat && v == 1
         continue; 
     end
@@ -314,11 +340,11 @@ for v = 1:total_vols
     end
 end
 
-% save the output
-save('dti_all_reg.mat', 'dti_all_reg', '-v7.3');
+% 5. Save the output
+save('dti_registered.mat', 'dti_all_reg', 'pd_mask', 'bvect', '-v7.3');
 fprintf('Registration Complete! Variable "dti_all_reg" saved.\n');
 
-clear fields rows cols slcs total_vols fixed_vol using_anat v z fixed_slice moving_slice current_mask fixed_masked moving_masked fixed_max moving_max fixed_norm moving_norm disp_field
+clear fields rows cols slcs total_vols fixed_vol v z fixed_slice moving_slice current_mask fixed_masked moving_masked fixed_max moving_max fixed_norm moving_norm disp_field
 
 %% 3.2 FSL Eddy based registraton method
 
