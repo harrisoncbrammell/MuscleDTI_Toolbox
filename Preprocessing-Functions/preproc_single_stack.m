@@ -1,4 +1,5 @@
 %% 1.1 Load diffusion files into single 4d array
+%% 1.1 Load diffusion files into single 4d array
 series_path = uigetdir(pwd, 'Select the Folder containing the DTI DICOMs series');
 
 cd(series_path);
@@ -7,6 +8,29 @@ num_files = length(file_list);
 
 [~, idx] = sort(str2double(regexp({file_list.name}, '\d+', 'match', 'once'))); %sort file list
 file_list = file_list(idx);
+
+% --- EXTRACT DTI GEOMETRY FROM FIRST DICOM HEADER ---
+temp_info = dicominfo(file_list(1).name);
+
+if isfield(temp_info, 'SliceThickness')
+    dti_slice_thick = temp_info.SliceThickness;
+elseif isfield(temp_info, 'SpacingBetweenSlices')
+    dti_slice_thick = temp_info.SpacingBetweenSlices;
+else
+    dti_slice_thick = 7; % Fallback
+    fprintf('WARNING: Could not find DTI Slice Thickness. Defaulting to 7mm.\n');
+end
+
+if isfield(temp_info, 'PixelSpacing')
+    dti_fov = temp_info.PixelSpacing(1) * double(temp_info.Rows); 
+else
+    dti_fov = 192; % Fallback
+    fprintf('WARNING: Could not find DTI Pixel Spacing. Defaulting FOV to 192mm.\n');
+end
+
+dti_dims = [dti_fov, dti_slice_thick];
+fprintf('DTI Geometry calculated: FOV = %.1f mm, Slice Thickness = %.1f mm\n', dti_fov, dti_slice_thick);
+% ----------------------------------------------------
 
 temp_vol = squeeze(double(dicomread(file_list(1).name))); %get dimensions from first file
 [rows, cols, slices] = size(temp_vol);
@@ -45,12 +69,14 @@ dwi_data = dti_all_unreg(:, :, :, dwi_inds); % reconstruct the final 4D array
 dti_all_unreg = cat(4, b0_avg, dwi_data); % structure: [Average_b0, DWI_1, DWI_2, ... DWI_N]
 bvect = bvect(dwi_inds, :);
 
+% Extract the single diffusion b-value for tensor calculation later
+bval = max(bval_list); 
+
 fprintf("Done with loading!\n");
 
-clear series_path file_list num_files idx temp_vol i currentFile vol_data info seq vec bval_list b0_inds dwi_inds b0_avg dwi_data
-
-save('dti_all_unreg.mat', 'dti_all_unreg', '-v7.3');
-save('bvect.mat', 'bvect');
+clear series_path file_list num_files idx temp_info dti_slice_thick dti_fov temp_vol i currentFile vol_data info seq vec bval_list b0_inds dwi_inds b0_avg dwi_data
+save('dti_all_unreg.mat', 'dti_all_unreg', 'dti_dims', '-v7.3');
+save('bvect.mat', 'bvect', 'bval');
 
 %% 1.2 Load anatomical volume (if available)
 [anat_file, anat_dir] = uigetfile('*.dcm', 'Select the anatomical volume (if available, otherwise click cancel)');
@@ -59,18 +85,47 @@ if isequal(anat_file, 0)
     fprintf("No anatomical volume selected.\n");
 else
     fprintf("Loading anatomical volume...\n");
-    anat_vol = squeeze(double(dicomread(fullfile(anat_dir, anat_file))));
+    full_anat_path = fullfile(anat_dir, anat_file);
+    anat_vol = squeeze(double(dicomread(full_anat_path)));
     
-    %resize anatomical volume to match DTI dimensions (if necessary)
-    fprintf('Resizing Anatomical data to match DTI geometry...\n')
+    % --- EXTRACT ANATOMICAL GEOMETRY FROM DICOM HEADER ---
+    anat_info = dicominfo(full_anat_path);
+    
+    if isfield(anat_info, 'SliceThickness')
+        anat_slice_thick = anat_info.SliceThickness;
+    else
+        anat_slice_thick = 4; % Fallback if missing
+        fprintf('WARNING: Could not find Anatomical Slice Thickness. Defaulting to 4mm.\n');
+    end
+    
+    if isfield(anat_info, 'PixelSpacing')
+        anat_fov = anat_info.PixelSpacing(1) * double(anat_info.Rows);
+    else
+        anat_fov = 192; % Fallback if missing
+        fprintf('WARNING: Could not find Anatomical Pixel Spacing. Defaulting FOV to 192mm.\n');
+    end
+    
+    anat_dims = [anat_fov, anat_slice_thick];
+    fprintf('Anatomical Geometry calculated: FOV = %.1f mm, Slice Thickness = %.1f mm\n', anat_fov, anat_slice_thick);
+    % -----------------------------------------------------
 
+    % Resize anatomical volume to match DTI dimensions
+    fprintf('Resizing Anatomical data to match DTI geometry...\n');
     [target_rows, target_cols, target_slices, ~] = size(dti_all_unreg);
-    anat_vol = imresize3(anat_vol, [target_rows, target_cols, target_slices]); %weighted avg of 8 closest pixels in 3d space to resize the anatomical volume to match the DTI dimensions
-
+    % Use 'linear' (trilinear) interpolation to prevent Gibbs ringing artifacts
+    anat_vol = imresize3(anat_vol, [target_rows, target_cols, target_slices], 'linear'); 
+    
+    % CRITICAL: Once resized, the Anatomical volume now physically occupies the DTI spatial matrix!
+    if exist('dti_dims', 'var')
+        anat_dims = dti_dims; 
+    else
+        fprintf('WARNING: dti_dims variable not found in workspace. Make sure Section 1.1 extracted it!\n');
+    end
+    
     fprintf('Resizing complete!\n');
-    clear anat_file anat_dir target_rows target_cols target_slices
-    save('anat_vol.mat', 'anat_vol', '-v7.3');
 end
+
+clear anat_file anat_dir target_rows target_cols target_slices full_anat_path anat_info anat_slice_thick anat_fov
 
 %% 2.1 Masking muscle of interest manually
 
@@ -126,9 +181,65 @@ pd_mask = load(uigetfile('Select the mask'));
 
 fprintf("Mask succesfully loaded!\n");
 
-%% 2.4 Upload mask from nifti file (if this fails try loading from mat file)\
+%% 2.4 Upload mask from nifti file (if this fails try loading from mat file)
 
 %TODO: add nifti loading functionality here (using niftiread and niftiinfo)
+
+%% 2.5 define_muscle built in masking method
+
+fprintf("Starting manual segmentation using define_muscle...\n");
+
+if ~exist('anat_vol', 'var')
+    fprintf("No anatomical volume found. Using average b=0 image for anatomical reference.\n");
+    anat_vol = dti_all_unreg(:, :, :, 1); 
+else
+    fprintf("Using existing anatomical volume for reference.\n")
+end
+
+% determine total slices available
+total_slices = size(anat_vol, 3);
+
+% prompt user for the slice range they want to segment
+prompt = {sprintf('Enter starting slice (1-%d):', total_slices), ...
+          sprintf('Enter ending slice (1-%d):', total_slices)};
+dlgtitle = 'Slice Range for define_muscle';
+dims = [1 50];
+definput = {'1', num2str(total_slices)};
+answer = inputdlg(prompt, dlgtitle, dims, definput);
+
+if isempty(answer)
+    fprintf("Segmentation canceled by user.\n");
+else
+    slices_to_segment = [str2double(answer{1}), str2double(answer{2})];
+
+    % set up fiber_visualizer options dynamically
+    if exist('anat_dims', 'var')
+        current_dims = anat_dims;
+    else
+        current_dims = dti_dims;
+    end
+
+    fv_options.anat_dims = current_dims; 
+    fv_options.anat_slices = slices_to_segment(1):2:slices_to_segment(2); 
+    
+    fv_options.plot_mesh = 0;   
+    fv_options.plot_mask = 1;   
+    fv_options.plot_fibers = 0; 
+    
+    fv_options.mask_size = [size(anat_vol, 1) size(anat_vol, 2)];
+    fv_options.mask_dims = current_dims; % Automatically sets to [FOV SliceThickness]
+    fv_options.mask_color = [1 0 0];
+
+    fprintf("Interactive window opening. Follow the define_muscle instructions.\n");
+    
+    % call the function
+    [pd_mask, ~] = define_muscle(anat_vol, slices_to_segment, [], fv_options);
+    
+    save('pd_mask.mat', 'pd_mask', '-v7.3');
+    fprintf("define_muscle complete! Variable 'pd_mask' saved to disk.\n");
+end
+
+clear total_slices prompt dlgtitle dims definput answer slices_to_segment fv_options
 
 %% 3.1 Demons registration method
 
