@@ -134,10 +134,9 @@ else
     fprintf('Resizing complete!\n');
 end
 
-% Clean up temporary variables
 clear anat_file anat_dir target_rows target_cols target_slices full_anat_path anat_info anat_slice_thick anat_fov
 
-%% 2.1 Masking muscle of interest manually
+%% 2.1 Masking muscle of interest manually with volume segmenter
 
 % Use a temporary reference volume so we don't trick Section 3
 if exist('using_anat', 'var') && using_anat && exist('anat_vol', 'var')
@@ -184,14 +183,18 @@ for z = 1:slices
     loop_mask(loop_image > threshold) = 1;
     
     % Morphological cleanup (fill holes, erode edges to remove skin/subcutaneous fat)
-    loop_mask = imfill(loop_mask, 'holes');
+    % fills small gap but not large (like bone)
+    loop_mask = bwareaopen(logical(loop_mask), 500);
+    inverted_mask = ~loop_mask;
+    inverted_mask = bwareaopen(inverted_mask, 200); 
+    loop_mask = ~inverted_mask;
+
     loop_mask = bwmorph(loop_mask, 'erode', 2); % You may need to adjust the '2' based on the dataset
     
     pd_mask(:,:,z) = loop_mask;
 end
 
-% Clean up all temporary variables
-clear z loop_image threshold loop_mask ref_vol rows cols slices
+clear z loop_image threshold loop_mask ref_vol rows cols slices inverted_mask
 save('pd_mask.mat', 'pd_mask', '-v7.3');
 fprintf("Mask succesfully generated and saved!\n");
 
@@ -279,11 +282,11 @@ if isstruct(pd_mask)
     fprintf("Fixed pd_mask struct. Now it is a matrix.\n");
 end
 
-% 2. Setup volumes and pre-allocate
+% setup volumes and pre-allocate
 [rows, cols, slcs, total_vols] = size(dti_all_unreg);
 dti_all_reg = zeros(size(dti_all_unreg));
 
-% 3. Determine the fixed reference image using our flag
+% choose ground truth reference image
 if exist('using_anat', 'var') && using_anat && exist('anat_vol', 'var')
     fprintf('Using Anatomical volume as fixed reference for registration.\n');
     fixed_vol = anat_vol;
@@ -294,7 +297,7 @@ else
     dti_all_reg(:, :, :, 1) = dti_all_unreg(:, :, :, 1); % b=0 is perfectly aligned with itself
 end
 
-% 4. The Registration Loop
+% registration loop slice by slice
 fprintf('Starting Slice-by-Slice Demons Registration...\n');
 
 for v = 1:total_vols 
@@ -340,7 +343,6 @@ for v = 1:total_vols
     end
 end
 
-% 5. Save the output
 save('dti_registered.mat', 'dti_all_reg', 'pd_mask', 'bvect', '-v7.3');
 fprintf('Registration Complete! Variable "dti_all_reg" saved.\n');
 
@@ -349,3 +351,11 @@ clear fields rows cols slcs total_vols fixed_vol v z fixed_slice moving_slice cu
 %% 3.2 FSL Eddy based registraton method
 
 %TODO: base of off exhisting implementation in eddy_correct.m
+
+%% 4.1 Denoising with anisotropic smoothing
+
+%TODO: Implement based of script provided
+
+%% 4.2 Threshold based principle component analysis (PCA) denoising
+
+%TODO: Implement based of script provided

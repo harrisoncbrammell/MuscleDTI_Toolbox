@@ -313,6 +313,7 @@ for s=slices(1):slices(2)
     
     % get the ROI
     subplot(2, 6, [3 4 9 10])
+    zoom(gcf, 'off'); % Automatically disable zoom before drawing
     [mask(:,:,s), x_points, y_points] = roipoly;
     loop_mask_c = flipud(squeeze(mask(:, mean_col, :))');
     loop_mask_c = double(loop_mask_c);
