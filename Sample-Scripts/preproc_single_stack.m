@@ -755,7 +755,13 @@ end
 % delta_t is scaled by the actual number of volumes in our data.
 % Requires aniso4D_smoothing.m on the MATLAB path (Preprocessing-Functions/).
 
-noise      = 5;
+% trial_1 used noise=5 (sigma=0.05, rho=0.10) and showed tissue-edge
+% structure in the Section 4.3 residual map -- a sign of over-smoothing.
+% Lower `noise` shrinks sigma/rho together (less edge-blur, less smoothing).
+% Change trial_label each time you test a new value so outputs don't
+% overwrite each other and Section 4.4 can compare two trials directly.
+trial_label = 'trial_2';
+noise       = 2.5;
 sigma      = noise / 100;
 rho        = 2 * sigma;
 delta_t    = noise * 3 / size(dti_all_reg, 4);
@@ -768,7 +774,8 @@ isfasteig  = true;
 % In-plane pixels are isotropic so x and y spacing are the same.
 dti_res = [dti_dims(1), dti_dims(1), dti_dims(2)];
 
-fprintf('Running anisotropic smoothing (%d volumes, delta_t = %.4f)...\n', size(dti_all_reg, 4), delta_t);
+fprintf('Running anisotropic smoothing [%s] (noise=%.2f, sigma=%.4f, rho=%.4f, %d volumes, delta_t=%.4f)...\n', ...
+    trial_label, noise, sigma, rho, size(dti_all_reg, 4), delta_t);
 dti_all_smooth = aniso4D_smoothing(dti_all_reg, sigma, rho, delta_t, dti_res, schemetype, isnormg, isfasteig);
 
 diff_max = max(abs(dti_all_smooth(:) - dti_all_reg(:)));
@@ -781,10 +788,10 @@ else
 end
 clear diff_max
 
-save(fullfile(output_dir, 'dti_smooth_trial_1_aniso.mat'), 'dti_all_smooth', '-v7.3');
+save(fullfile(output_dir, sprintf('dti_smooth_%s_aniso.mat', trial_label)), 'dti_all_smooth', '-v7.3');
 fprintf('Saved to %s\n', output_dir);
 
-clear noise sigma rho delta_t schemetype isnormg isfasteig dti_res
+clear noise sigma rho delta_t schemetype isnormg isfasteig dti_res trial_label
 
 %% 4.2 Threshold based principle component analysis (PCA) denoising
 
