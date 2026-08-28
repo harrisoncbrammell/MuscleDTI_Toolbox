@@ -61,8 +61,8 @@ run(fullfile(pipeline_root, '3_registration', 'qc_registration.m'));
 %% ===== Stage 4: Denoising =====
 % Choose ONE:
 
-run(fullfile(pipeline_root, '4_denoising', 'aniso.m'));
-% run(fullfile(pipeline_root, '4_denoising', 'tpca.m'));
+%run(fullfile(pipeline_root, '4_denoising', 'aniso.m'));
+run(fullfile(pipeline_root, '4_denoising', 'tpca.m'));
 
 % Optional QC:/
 run(fullfile(pipeline_root, '4_denoising', 'qc_denoising.m'));

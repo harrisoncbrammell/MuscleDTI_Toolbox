@@ -90,6 +90,8 @@ for z = 1:slices
     V1_map(:,:,z,:)  = v1_sl{z};   neg_eig(:,:,z)   = ng_sl{z};
 end
 
+radial_diff = (lambda2 + lambda3) / 2;
+
 % Color FA: FA × |first eigenvector|, channels = [R=L/R, G=A/P, B=S/I]
 cFA_map = zeros(rows, cols, slices, 3);
 for ch = 1:3
@@ -127,65 +129,70 @@ end
 % --- QC figure: 2 rows × 4 cols ---
 z_mid = round(slices / 2);
 
-qc_fig = figure('Name', 'Tensor QC: Derived Maps', 'Color', 'w', 'Position', [50 50 1400 650]);
+qc_fig = figure('Name', 'Tensor QC: Derived Maps', 'Color', 'w', 'Position', [50 50 1200 900]);
 
-ax1 = subplot(2,4,1);
+ax1 = subplot(3,3,1);
 imagesc(ax1, FA_map(:,:,z_mid), [0 1]); colormap(ax1, 'hot'); colorbar(ax1);
 set(ax1, 'DataAspectRatio', [1 1 1]); axis(ax1, 'off');
 title(ax1, sprintf('FA — slice %d', z_mid), 'Color', 'k');
 
-ax2 = subplot(2,4,2);
+ax2 = subplot(3,3,2);
 imagesc(ax2, ADC_map(:,:,z_mid), [0 3e-3]); colormap(ax2, 'parula'); colorbar(ax2);
 set(ax2, 'DataAspectRatio', [1 1 1]); axis(ax2, 'off');
 title(ax2, 'ADC = TRACE/3 (mm²/s)  [0–3×10⁻³]', 'Color', 'k');
 
-ax3 = subplot(2,4,3);
+ax3 = subplot(3,3,3);
 cfa_slice = squeeze(cFA_map(:,:,z_mid,:));  % [rows × cols × 3]
 image(ax3, cfa_slice);
 set(ax3, 'DataAspectRatio', [1 1 1]); axis(ax3, 'off');
 title(ax3, 'Color FA  (R=L/R  G=A/P  B=S/I)', 'Color', 'k');
 
-ax4 = subplot(2,4,4);
+ax4 = subplot(3,3,4);
 neg_overlay = labeloverlay(mat2gray(FA_map(:,:,z_mid)), neg_eig(:,:,z_mid), ...
     'Colormap', [1 0 0], 'Transparency', 0.3);
 image(ax4, neg_overlay);
 set(ax4, 'DataAspectRatio', [1 1 1]); axis(ax4, 'off');
 title(ax4, sprintf('Non-physical voxels (red) — %.1f%%', 100*n_neg/n_mask), 'Color', 'k');
 
-ax5 = subplot(2,4,5);
+ax5 = subplot(3,3,5);
 imagesc(ax5, lambda1(:,:,z_mid)); colormap(ax5, 'parula'); colorbar(ax5);
 set(ax5, 'DataAspectRatio', [1 1 1]); axis(ax5, 'off');
 title(ax5, 'λ₁  (primary diffusivity)', 'Color', 'k');
 
-ax6 = subplot(2,4,6);
+ax6 = subplot(3,3,6);
 imagesc(ax6, lambda2(:,:,z_mid)); colormap(ax6, 'parula'); colorbar(ax6);
 set(ax6, 'DataAspectRatio', [1 1 1]); axis(ax6, 'off');
 title(ax6, 'λ₂', 'Color', 'k');
 
-ax7 = subplot(2,4,7);
+ax7 = subplot(3,3,7);
 imagesc(ax7, trace_map(:,:,z_mid)); colormap(ax7, 'parula'); colorbar(ax7);
 set(ax7, 'DataAspectRatio', [1 1 1]); axis(ax7, 'off');
 title(ax7, 'TRACE = λ₁+λ₂+λ₃', 'Color', 'k');
 
-ax8 = subplot(2,4,8);
-errorbar(ax8, 1:slices, slice_fa_mean, slice_fa_std, 'b-o', 'MarkerSize', 3, 'LineWidth', 1);
-hold(ax8, 'on');
-yline(ax8, 0.2, 'g--', 'Min expected', 'LineWidth', 1);
-yline(ax8, 0.4, 'r--', 'Max expected', 'LineWidth', 1);
-xlabel(ax8, 'Slice', 'Color', 'k'); ylabel(ax8, 'Mean FA ± SD', 'Color', 'k');
-title(ax8, 'Per-slice FA profile', 'Color', 'k');
-set(ax8, 'XColor', 'k', 'YColor', 'k'); grid(ax8, 'on'); ylim(ax8, [0 1]);
+ax8 = subplot(3,3,8);
+imagesc(ax8, radial_diff(:,:,z_mid)); colormap(ax8, 'parula'); colorbar(ax8);
+set(ax8, 'DataAspectRatio', [1 1 1]); axis(ax8, 'off');
+title(ax8, 'RD = (λ₂+λ₃)/2  (radial diffusivity)', 'Color', 'k');
+
+ax9 = subplot(3,3,9);
+errorbar(ax9, 1:slices, slice_fa_mean, slice_fa_std, 'b-o', 'MarkerSize', 3, 'LineWidth', 1);
+hold(ax9, 'on');
+yline(ax9, 0.2, 'g--', 'Min expected', 'LineWidth', 1);
+yline(ax9, 0.4, 'r--', 'Max expected', 'LineWidth', 1);
+xlabel(ax9, 'Slice', 'Color', 'k'); ylabel(ax9, 'Mean FA ± SD', 'Color', 'k');
+title(ax9, 'Per-slice FA profile', 'Color', 'k');
+set(ax9, 'XColor', 'k', 'YColor', 'k'); grid(ax9, 'on'); ylim(ax9, [0 1]);
 
 % --- Save all maps ---
 % Save all maps — send tensor_maps_trial_1.mat to Dr. Bashir
 save(fullfile(output_dir, 'tensor_maps_trial_1.mat'), ...
     'FA_map', 'ADC_map', 'trace_map', ...
-    'lambda1', 'lambda2', 'lambda3', ...
+    'lambda1', 'lambda2', 'lambda3', 'radial_diff', ...
     'V1_map', 'cFA_map', 'neg_eig', '-v7.3');
 fprintf('Maps saved to tensor_maps_trial_1.mat in %s\n', output_dir);
 
 save_qc_figure(qc_fig, output_dir, 'qc_tensor_maps');
 
 clear n_mask n_neg mask_l cfa_slice neg_overlay z_mid z mk_z fa_z ...
-      slice_fa_mean slice_fa_std ax1 ax2 ax3 ax4 ax5 ax6 ax7 ax8 qc_fig
+      slice_fa_mean slice_fa_std ax1 ax2 ax3 ax4 ax5 ax6 ax7 ax8 ax9 qc_fig
 

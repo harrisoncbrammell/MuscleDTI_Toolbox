@@ -29,14 +29,12 @@ for z = 1:size(background_mask, 3)
     background_mask(:,:,z) = imerode(background_mask(:,:,z), strel('disk', 15)); %erode the mask to make sure it doesnt include tissue boarders
 end
 
-%{
-qc and inspection
 fprintf('Background voxels: %d\n', sum(background_mask(:)));
 z = round(size(background_mask,3)/2);
-figure;
+qc_fig = figure;
 subplot(1,2,1); imshow(dti_all_reg(:,:,z,1) .* double(background_mask(:,:,z)), []); title('Masked Image');
 subplot(1,2,2); imshow(background_mask(:,:,z)); title('Mask');
-%}
+if exist('output_dir', 'var'), save_qc_figure(qc_fig, output_dir, 'qc_tpca_background_mask'); end
 
 %% Step 2 — Compute noise variance per background voxel
 background_var_map = var(dti_all_reg, 0, 4) .* double(background_mask);
@@ -51,26 +49,11 @@ disp(max(background_var_map(:)));
 disp(sum(background_mask(:)));
 
 %% Step 4 — Call TPCA_denoising
-% Pass in the registered data, mask, kernel, and noise variance map.
-% This will take longer than aniso — TPCA slides a patch across every
-% masked voxel and runs SVD at each one.
-%
-% YOUR CODE HERE:
-% - Call: [dti_all_smooth, n_comps] = TPCA_denoising(dti_all_reg, pd_mask, kernel, noise_var);
-% - Print a "done" message with the median number of components retained.
-%   Hint: median(n_comps(pd_mask > 0), 'all')
-
-
+[dti_all_smooth, n_comps] = TPCA_denoising(dti_all_reg, pd_mask, kernel, full_var_map);
 
 %% Step 5 — Save
-% Save using the same variable name (dti_all_smooth) as the aniso output
-% so downstream stages (tensor estimation etc.) don't need to change.
-%
-% YOUR CODE HERE:
-% - Save dti_all_smooth to output_dir as:
-%   sprintf('dti_smooth_%s_tpca.mat', trial_label)
-% - Use the same save() call pattern as aniso.m above (with '-v7.3').
-% - Print a confirmation message with the save path.
+save(fullfile(output_dir, sprintf('dti_smooth_%s_tpca.mat', trial_label)), 'dti_all_smooth', '-v7.3');
+fprintf('Saved to %s\n', output_dir);
 
 
 
