@@ -44,8 +44,10 @@ for v = 1:total_vols
 
         % Fixed side: mask with the static, pre-computed whole-leg mask.
         % That boundary is trusted -- the anatomical/reference image isn't
-        % the one being warped.
-        fixed_masked = fixed_slice .* current_mask;
+        % the one being warped. Feathered (not a hard 0/1 cutoff) because
+        % the fixed and moving masks are computed independently and won't
+        % agree exactly on where the boundary is -- see feather_mask.m.
+        fixed_masked = fixed_slice .* feather_mask(current_mask);
 
         % Moving side: mask with a FRESH mask built from THIS slice's own
         % contrast, not the shared pd_mask. Reusing pd_mask here would crop
@@ -54,10 +56,10 @@ for v = 1:total_vols
         % says it should be -- which is exactly what registration is
         % supposed to figure out. Quadrant-adaptive Otsu + dilate gives the
         % moving edge some margin so demons has real signal to align there.
-        % See form_dwi_mask (Local Functions, bottom of script); adapted
-        % from bdamon/MuscleDTI_Toolbox Sample-Scripts/pre_process.m.
+        % See helpers/form_dwi_mask.m; adapted from
+        % bdamon/MuscleDTI_Toolbox Sample-Scripts/pre_process.m.
         moving_mask = form_dwi_mask(moving_slice);
-        moving_masked = moving_slice .* moving_mask;
+        moving_masked = moving_slice .* feather_mask(moving_mask);
 
         % Safely normalize (Skip registration for this slice if either mask is empty)
         fixed_max = max(fixed_masked(:));

@@ -127,7 +127,7 @@ end
 % --- QC figure: 2 rows × 4 cols ---
 z_mid = round(slices / 2);
 
-figure('Name', 'Tensor QC: Derived Maps', 'Color', 'w', 'Position', [50 50 1400 650]);
+qc_fig = figure('Name', 'Tensor QC: Derived Maps', 'Color', 'w', 'Position', [50 50 1400 650]);
 
 ax1 = subplot(2,4,1);
 imagesc(ax1, FA_map(:,:,z_mid), [0 1]); colormap(ax1, 'hot'); colorbar(ax1);
@@ -184,6 +184,8 @@ save(fullfile(output_dir, 'tensor_maps_trial_1.mat'), ...
     'V1_map', 'cFA_map', 'neg_eig', '-v7.3');
 fprintf('Maps saved to tensor_maps_trial_1.mat in %s\n', output_dir);
 
+save_qc_figure(qc_fig, output_dir, 'qc_tensor_maps');
+
 clear n_mask n_neg mask_l cfa_slice neg_overlay z_mid z mk_z fa_z ...
-      slice_fa_mean slice_fa_std ax1 ax2 ax3 ax4 ax5 ax6 ax7 ax8
+      slice_fa_mean slice_fa_std ax1 ax2 ax3 ax4 ax5 ax6 ax7 ax8 qc_fig
 

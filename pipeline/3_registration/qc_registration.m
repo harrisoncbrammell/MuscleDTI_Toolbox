@@ -2,7 +2,11 @@
 
 % 1. Settings: Choose which volume and slice to inspect
 % (Volume 2 is usually the first diffusion direction)
-v_inspect = 1; % b=0 matches Dixon water contrast best — most diagnostic; change to 2+ for a DWI direction
+v_inspect = 2; % first DWI direction. NOTE: volume 1 is the average b=0, which is
+                % never run through demons in EPI space (registering it to itself
+                % is meaningless -- see demons.m/demons_parallel.m `v==1` skip), so
+                % v_inspect=1 would compare the b0 image against itself: identical,
+                % zero difference map, no color fringing -- not a real QC check.
 z_inspect = round(size(dti_all_reg, 3) / 2); % Middle slice
 
 % 2. Prepare the images
@@ -19,7 +23,7 @@ moving_unreg = dti_all_unreg(:,:,z_inspect, v_inspect);
 moving_reg = dti_all_reg(:,:,z_inspect, v_inspect);
 
 % 3. Create the QC Figure
-figure('Name', 'Registration Quality Control', 'NumberTitle', 'off', 'Color', 'w');
+qc_fig = figure('Name', 'Registration Quality Control', 'NumberTitle', 'off', 'Color', 'w');
 
 % Subplot 1: Checkerboard (Alignment Test)
 subplot(2,2,1);
@@ -54,6 +58,12 @@ title('Before (Left) vs After (Right)');
 xlabel('Compare distortion/warping');
 
 fprintf('QC Figure generated for Slice %d, Volume %d.\n', z_inspect, v_inspect);
+
+if exist('output_dir', 'var')
+    save_qc_figure(qc_fig, output_dir, sprintf('qc_registration_vol%d_slice%d', v_inspect, z_inspect));
+end
+% Note: the flicker test below is a live animation, not a static figure --
+% it isn't saved here.
 
 % 4. Optional: Animation (The Flicker Test)
 fprintf('Starting Flicker Test in a new window...\n');

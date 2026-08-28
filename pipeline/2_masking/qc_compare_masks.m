@@ -29,13 +29,17 @@ else
     fprintf('  Mean per-slice Dice: %.4f\n', mean(slice_dice));
     fprintf('  Min per-slice Dice:  %.4f (slice %d)\n', min(slice_dice), find(slice_dice==min(slice_dice),1));
 
-    figure('Name', 'Mask Comparison: Per-Slice Dice', 'Color', 'w');
+    qc_fig = figure('Name', 'Mask Comparison: Per-Slice Dice', 'Color', 'w');
     plot(1:n_slices, slice_dice, 'b-o', 'MarkerSize', 4, 'LineWidth', 1.2); hold on;
     yline(overall_dice, 'r--', sprintf('Overall Dice = %.3f', overall_dice), 'LineWidth', 1);
     xlabel('Slice'); ylabel('Dice coefficient');
     title(sprintf('Per-slice Dice: %s vs %s', f1, f2));
     ylim([0 1.05]); grid on;
 
-    clear m1 m2 f1 f2 d1 d2 fld n_slices s a b slice_dice overall_dice start_dir
+    if exist('output_dir', 'var')
+        save_qc_figure(qc_fig, output_dir, 'qc_mask_compare_dice');
+    end
+
+    clear m1 m2 f1 f2 d1 d2 fld n_slices s a b slice_dice overall_dice start_dir qc_fig
 end
 

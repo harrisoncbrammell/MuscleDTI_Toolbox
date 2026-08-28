@@ -107,7 +107,7 @@ end
 z_mid  = round(slices / 2);
 clim_r = [0, prctile(resid_vals, 99)];
 
-figure('Name', 'Tensor QC: Signal Residuals', 'Color', 'w', 'Position', [100 100 1200 380]);
+qc_fig = figure('Name', 'Tensor QC: Signal Residuals', 'Color', 'w', 'Position', [100 100 1200 380]);
 
 ax1 = subplot(1,3,1);
 imagesc(ax1, resid_map(:,:,z_mid), clim_r); colormap(ax1, 'hot'); colorbar(ax1);
@@ -129,7 +129,9 @@ set(ax3, 'XColor', 'k', 'YColor', 'k'); grid(ax3, 'on');
 save(fullfile(output_dir, 'tensor_maps_trial_1.mat'), 'resid_map', '-append');
 fprintf('resid_map appended to tensor_maps_trial_1.mat in %s\n', output_dir);
 
+save_qc_figure(qc_fig, output_dir, 'qc_tensor_residuals');
+
 clear data_sl tens_sl mask_sl rms_sl rms_s sig_s D_s mk D signal_v S0 S_pred S_meas ...
       g dir z r c mask_l resid_vals slice_resid rv mk_z vol_inds n_dirs ...
-      rows cols slices clim_r z_mid ax1 ax2 ax3
+      rows cols slices clim_r z_mid ax1 ax2 ax3 qc_fig
 

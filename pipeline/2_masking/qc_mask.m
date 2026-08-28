@@ -67,7 +67,7 @@ else
 end
 
 % --- Per-slice area + solidity figure ---
-figure('Name', 'Mask QC: Per-Slice Metrics', 'Color', 'w', 'Position', [100 100 900 400]);
+qc_fig = figure('Name', 'Mask QC: Per-Slice Metrics', 'Color', 'w', 'Position', [100 100 900 400]);
 
 subplot(1,2,1);
 plot(1:qc_slices, phys_areas, 'b-o', 'MarkerSize', 4, 'LineWidth', 1.2); hold on;
@@ -87,6 +87,12 @@ yline(0.9, 'r--', 'Good threshold', 'LineWidth', 1);
 xlabel('Slice'); ylabel('Solidity');
 title('Mask solidity per slice (1 = convex)'); ylim([0 1.05]); grid on;
 
+if exist('output_dir', 'var')
+    save_qc_figure(qc_fig, output_dir, 'qc_mask_metrics');
+end
+% Note: the implay overlay below is a scrollable video viewer, not a
+% static figure -- it isn't saved here.
+
 % --- Visual overlay (scrollable) ---
 if ~isempty(qc_ref)
     fprintf('Building overlay viewer (%s + mask)...\n', qc_ref_label);
@@ -102,7 +108,7 @@ end
 
 clear qc_rows qc_cols qc_slices qc_ref qc_ref_label qc_ref_norm overlay_stack ...
       slice_areas total_voxels empty_slices low_threshold outlier_slices ...
-      solidity s props phys_areas total_vol_mL vox_area_mm2 vox_vol_mm3 area_unit frame
+      solidity s props phys_areas total_vol_mL vox_area_mm2 vox_vol_mm3 area_unit frame qc_fig
 
 end % pd_mask existence check
 

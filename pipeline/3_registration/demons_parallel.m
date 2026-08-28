@@ -56,16 +56,18 @@ parfor v = 1:total_vols
 
         % Fixed side: mask with the static, pre-computed whole-leg mask.
         % That boundary is trusted -- the anatomical/reference image isn't
-        % the one being warped.
-        fixed_masked = fixed_slice .* current_mask;
+        % the one being warped. Feathered (not a hard 0/1 cutoff) because
+        % the fixed and moving masks are computed independently and won't
+        % agree exactly on where the boundary is -- see feather_mask.m.
+        fixed_masked = fixed_slice .* feather_mask(current_mask);
 
         % Moving side: mask with a FRESH mask built from THIS slice's own
         % contrast, not the shared pd_mask. See the matching comment in
-        % Section 3.1 and form_dwi_mask (Local Functions, bottom of script)
-        % for the rationale. form_dwi_mask is self-contained (stateless
-        % besides its own input), so it's safe to call inside parfor.
+        % demons.m and helpers/form_dwi_mask.m for the rationale.
+        % form_dwi_mask and feather_mask are both self-contained (stateless
+        % besides their own inputs), so they're safe to call inside parfor.
         moving_mask = form_dwi_mask(moving_slice);
-        moving_masked = moving_slice .* moving_mask;
+        moving_masked = moving_slice .* feather_mask(moving_mask);
 
         % Safely normalize (Skip registration for this slice if either mask is empty)
         fixed_max = max(fixed_masked(:));
@@ -86,7 +88,7 @@ parfor v = 1:total_vols
         end
 
         % Calculate displacement field and apply the warp to the UNMASKED original slice
-        [disp_field, ~] = imregdemons(moving_norm, fixed_norm, [500 400 200], 'AccumulatedFieldSmoothing', 1.3, 'DisplayWaitbar', false);
+        [disp_field, ~] = imregdemons(moving_norm, fixed_norm, [500 400 200], 'AccumulatedFieldSmoothing', 2.5, 'DisplayWaitbar', false);
         temp_vol_reg(:, :, z) = imwarp(moving_slice, disp_field);
     end
 

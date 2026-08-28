@@ -19,6 +19,15 @@ for z = 1:n_slices
     pd_mask(:,:,z) = form_dwi_mask(ref_vol(:,:,z));
 end
 
+% Otsu-based masking separates tissue from air, not thigh from everything
+% else -- on real study data this pulls in torso and any QC phantom
+% (e.g. a saline calibration tube) sitting in the FOV alongside the leg.
+% keep_primary_component tracks the thigh as one connected blob through
+% the stack (anchored at the middle slice) and drops everything else.
+% See helpers/keep_primary_component.m for the method and its limits.
+fprintf('Removing spurious extra tissue blobs (torso, phantom, etc.)...\n');
+pd_mask = keep_primary_component(pd_mask);
+
 clear ref_vol n_slices z
 
 if ~exist('output_dir', 'var')

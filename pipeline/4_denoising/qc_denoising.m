@@ -57,7 +57,7 @@ sig_smooth = squeeze(dti_all_smooth(v_row, v_col, z_qc, :));
 
 % Single figure: 3 rows × 3 cols
 % Colorbars omitted on image panels — scale shown in title to avoid layout squishing.
-figure('Name', 'Denoising QC', 'Color', 'w', 'Position', [50 50 1100 750]);
+qc_fig = figure('Name', 'Denoising QC', 'Color', 'w', 'Position', [50 50 1100 750]);
 
 no_change = (res_lim == 1 && max(abs(residual(:))) == 0);  % true when smoothing did nothing
 
@@ -105,9 +105,13 @@ title(ax7, sprintf('Signal profile — voxel [%d,%d] slice %d  |  smoother = goo
 set(ax7, 'Color', 'w', 'XColor', 'k', 'YColor', 'k');
 legend(ax7); grid(ax7, 'on');
 
+if exist('output_dir', 'var')
+    save_qc_figure(qc_fig, output_dir, 'qc_denoising');
+end
+
 clear tsnr_raw tsnr_smooth tsnr_diff clim_tsnr clim_diff residual res_lim ...
       sig_raw sig_smooth v_row v_col z_qc v_qc ri ci smooth_label start_dir ...
-      ax1 ax2 ax3 ax4 ax5 ax6 ax7 no_change
+      ax1 ax2 ax3 ax4 ax5 ax6 ax7 no_change qc_fig
 
 end
 

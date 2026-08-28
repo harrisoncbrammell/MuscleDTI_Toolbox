@@ -10,12 +10,18 @@
 % (dti_all_reg, pd_mask, dti_all_smooth, etc.), so you can still stop after
 % any line and inspect the workspace, or jump in partway if you already
 % have a checkpoint .mat file loaded.
+%
+% NOTE: pipeline_root is hardcoded below rather than derived from
+% mfilename('fullpath'). When you run just one %% section (Ctrl+Enter)
+% instead of the whole file, MATLAB executes from a temporary editor
+% buffer, so mfilename resolves to a Temp\Editor_xxxx path instead of this
+% file's real location -- hardcoding sidesteps that entirely. Update the
+% path below if you move the repo.
 
-pipeline_root = fileparts(mfilename('fullpath'));
+pipeline_root = 'D:\Development\MRI-sure-program\dti\tools\MuscleDTI_Toolbox\pipeline';
+toolbox_root  = fullfile(pipeline_root, '..');
 
-addpath(fullfile(pipeline_root, '..', 'Preprocessing-Functions'));
-addpath(fullfile(pipeline_root, '..', 'Tractography-Functions'));
-addpath(fullfile(pipeline_root, 'helpers'));
+addpath(genpath(toolbox_root));
 
 
 %% ===== Stage 1: Ingestion =====
@@ -23,7 +29,6 @@ addpath(fullfile(pipeline_root, 'helpers'));
 run(fullfile(pipeline_root, '1_ingest', 'load_diffusion.m'));
 
 % Optional -- only needed if you plan to register in anatomical (Dixon)
-% space rather than EPI (b=0) space. Sets using_anat = true.
 run(fullfile(pipeline_root, '1_ingest', 'load_anatomical.m'));
 
 
@@ -51,15 +56,15 @@ run(fullfile(pipeline_root, '3_registration', 'demons_parallel.m'));
 
 % Optional QC:
 run(fullfile(pipeline_root, '3_registration', 'qc_registration.m'));
-
+% run(fullfile(pipeline_root, '3_registration', 'qc_cross_volume.m'));  % node consistency across directions
 
 %% ===== Stage 4: Denoising =====
 % Choose ONE:
 
 run(fullfile(pipeline_root, '4_denoising', 'aniso.m'));
-% run(fullfile(pipeline_root, '4_denoising', 'tpca.m'));  % stub, not implemented yet
+% run(fullfile(pipeline_root, '4_denoising', 'tpca.m'));
 
-% Optional QC:
+% Optional QC:/
 run(fullfile(pipeline_root, '4_denoising', 'qc_denoising.m'));
 % run(fullfile(pipeline_root, '4_denoising', 'qc_denoising_compare.m'));  % needs two denoised volumes in workspace/on disk
 

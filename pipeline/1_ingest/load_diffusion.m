@@ -1,6 +1,13 @@
 %% 1.1 Load diffusion files into single 4d array
 series_path = uigetdir(pwd, 'Select the Folder containing the DTI DICOMs series');
-output_dir  = uigetdir(pwd, 'Select output folder to save processed files');
+if isequal(series_path, 0) || ~isfolder(series_path)
+    error('load_diffusion:noSeriesPath', 'No valid DICOM series folder was selected. Re-run this section and pick a folder in the dialog.');
+end
+
+output_dir = uigetdir(pwd, 'Select output folder to save processed files');
+if isequal(output_dir, 0) || ~isfolder(output_dir)
+    error('load_diffusion:noOutputDir', 'No valid output folder was selected. Re-run this section and pick a folder in the dialog.');
+end
 
 cd(series_path);
 file_list = dir(fullfile(series_path, '*.dcm'));
